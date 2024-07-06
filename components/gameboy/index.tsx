@@ -3,7 +3,7 @@ import { Uint16, Uint8 } from "../types";
 
 import CPUStateViewer from "../widgets/cpu-state-viewer";
 import styles from "./index.module.css";
-import Memory from "../memory";
+import Memory, { MemoryProps } from "../memory";
 
 export type CPUState = {
   PC: Uint16;
@@ -26,18 +26,18 @@ export type CPUState = {
 };
 
 type Operand = {
-  Name: string; // operand name: register, n8/n16 (immediate unsigned value), e8 (immediate signed value), a8/a16 (memory location)
-  Bytes: number; // number of bytes the operand takes (optional)
-  Immediate: boolean; // is the operand an immediate value or should it be fetched from memory
-  Increment: boolean; // should the program counter be incremented after fetching the operand
-  Decrement: boolean;
+  name: string; // operand name: register, n8/n16 (immediate unsigned value), e8 (immediate signed value), a8/a16 (memory location)
+  bytes: number; // number of bytes the operand takes (optional)
+  immediate: boolean; // is the operand an immediate value or should it be fetched from memory
+  increment: boolean; // should the program counter be incremented after fetching the operand
+  decrement: boolean;
 };
 
 type Flags = {
-  Z: boolean; // Zero flag: set if the result is zero (all bits are 0)
-  N: boolean; // Subtract flag: set if the instruction is a subtraction
-  H: boolean; // Half carry flag: set if there was a carry from bit 3 (result is 0x0F)
-  C: boolean; // Carry flag: set if there was a carry from bit 7 (result is 0xFF)
+  Z: string | boolean; // Zero flag: set if the result is zero (all bits are 0)
+  N: string | boolean; // Subtract flag: set if the instruction is a subtraction
+  H: string | boolean; // Half carry flag: set if there was a carry from bit 3 (result is 0x0F)
+  C: string | boolean; // Carry flag: set if there was a carry from bit 7 (result is 0xFF)
 };
 
 type Instruction = {
@@ -53,6 +53,7 @@ export type GameboyState = {
   prevState: CPUState;
   currState: CPUState;
   instruction: Instruction;
+  memory: MemoryProps;
 };
 
 const defaultCPUState = (): CPUState => ({
@@ -88,13 +89,30 @@ const defaultGameboyState = (): GameboyState => ({
   prevState: defaultCPUState(),
   currState: defaultCPUState(),
   instruction: defaultInstruction(),
+  memory: { address: new Uint16(0x0000), data: [] },
 });
+
+// TODO! Move this to server-go and expose through d.ts file
+type MessageType = {
+  ConnectionMessageType: 0; // initial client http connection even before upgrading to websocket
+  CommandMessageType: 10; // sends a command to the server (message.data: 'step', 'reset')
+  ErrorMessageType: 60; // notifies the client of an error (message.data: string)
+  GameboyStateMessageType: 70; // notifies the client of the current gameboy state (message.data: GameboyState)
+  CPUStateMessageType: 71; // notifies the client of the current CPU state (message.data: CpuState)
+  MemoryStateMessageType: 72; // notifies the client of a memory write (message.data: MemoryWrite) // TODO! should be an array []MemoryWrite that retrieves only changes and not whole memory state
+};
+
+type Message<T> = {
+  Type: MessageType; // Message type
+  Data: T; // Message data
+};
 
 const Gameboy = () => {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [prevCPUState, setPrevCPUState] = useState<CPUState>(defaultCPUState());
   const [currCPUState, setCurrCPUState] = useState<CPUState>(defaultCPUState());
   const [instruction, setInstruction] = useState<Instruction>(defaultInstruction());
+  const [memory, setMemory] = useState<MemoryProps>();
 
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:8080/gameboy");
@@ -106,108 +124,119 @@ const Gameboy = () => {
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
 
+      //TODO! switch case on message.Type
       setPrevCPUState({
         PC:
-          message.prevState && message.prevState.PC
-            ? new Uint16(message.prevState.PC)
+          message.data.prevState && message.data.prevState.PC
+            ? new Uint16(message.data.prevState.PC)
             : new Uint16(0),
         SP:
-          message.prevState && message.prevState.SP
-            ? new Uint16(message.prevState.SP)
+          message.data.prevState && message.data.prevState.SP
+            ? new Uint16(message.data.prevState.SP)
             : new Uint16(0),
-        A: message.prevState && message.prevState.A ? new Uint8(message.prevState.A) : new Uint8(0),
-        F: message.prevState && message.prevState.F ? new Uint8(message.prevState.F) : new Uint8(0),
-        Z: message.prevState && message.prevState.Z,
-        N: message.prevState && message.prevState.N,
-        H: message.prevState && message.prevState.H,
-        C: message.prevState && message.prevState.C,
+        A:
+          message.data.prevState && message.data.prevState.A
+            ? new Uint8(message.data.prevState.A)
+            : new Uint8(0),
+        F:
+          message.data.prevState && message.data.prevState.F
+            ? new Uint8(message.data.prevState.F)
+            : new Uint8(0),
+        Z: message.data.prevState && message.data.prevState.Z,
+        N: message.data.prevState && message.data.prevState.N,
+        H: message.data.prevState && message.data.prevState.H,
+        C: message.data.prevState && message.data.prevState.C,
         BC:
-          message.prevState && message.prevState.BC
-            ? new Uint16(message.prevState.BC)
+          message.data.prevState && message.data.prevState.BC
+            ? new Uint16(message.data.prevState.BC)
             : new Uint16(0),
         DE:
-          message.prevState && message.prevState.DE
-            ? new Uint16(message.prevState.DE)
+          message.data.prevState && message.data.prevState.DE
+            ? new Uint16(message.data.prevState.DE)
             : new Uint16(0),
         HL:
-          message.prevState && message.prevState.HL
-            ? new Uint16(message.prevState.HL)
+          message.data.prevState && message.data.prevState.HL
+            ? new Uint16(message.data.prevState.HL)
             : new Uint16(0),
         IR:
-          message.prevState && message.prevState.IR
-            ? new Uint8(message.prevState.IR)
+          message.data.prevState && message.data.prevState.IR
+            ? new Uint8(message.data.prevState.IR)
             : new Uint8(0),
-        prefixed: message.prevState && message.prevState.prefixed,
+        prefixed: message.data.prevState && message.data.prevState.prefixed,
         operandValue:
-          message.prevState && message.prevState.operandValue
-            ? new Uint16(message.prevState.operandValue)
+          message.data.prevState && message.data.prevState.operandValue
+            ? new Uint16(message.data.prevState.operandValue)
             : new Uint16(0),
         IE:
-          message.prevState && message.prevState.IE
-            ? new Uint16(message.prevState.IE)
+          message.data.prevState && message.data.prevState.IE
+            ? new Uint16(message.data.prevState.IE)
             : new Uint16(0),
-        IME: message.prevState && message.prevState.IME,
-        Halted: message.prevState && message.prevState.Halted,
+        IME: message.data.prevState && message.data.prevState.IME,
+        Halted: message.data.prevState && message.data.prevState.Halted,
       } as CPUState);
 
       setCurrCPUState({
         PC:
-          message.currState && message.currState.PC
-            ? new Uint16(message.currState.PC)
+          message.data.currState && message.data.currState.PC
+            ? new Uint16(message.data.currState.PC)
             : new Uint16(0),
         SP:
-          message.currState && message.currState.SP
-            ? new Uint16(message.currState.SP)
+          message.data.currState && message.data.currState.SP
+            ? new Uint16(message.data.currState.SP)
             : new Uint16(0),
-        A: message.currState && message.currState.A ? new Uint8(message.currState.A) : new Uint8(0),
-        F: message.currState && message.currState.F ? new Uint8(message.currState.F) : new Uint8(0),
-        Z: message.currState && message.currState.Z,
-        N: message.currState && message.currState.N,
-        H: message.currState && message.currState.H,
-        C: message.currState && message.currState.C,
+        A:
+          message.data.currState && message.data.currState.A
+            ? new Uint8(message.data.currState.A)
+            : new Uint8(0),
+        F:
+          message.data.currState && message.data.currState.F
+            ? new Uint8(message.data.currState.F)
+            : new Uint8(0),
+        Z: message.data.currState && message.data.currState.Z,
+        N: message.data.currState && message.data.currState.N,
+        H: message.data.currState && message.data.currState.H,
+        C: message.data.currState && message.data.currState.C,
         BC:
-          message.currState && message.currState.BC
-            ? new Uint16(message.currState.BC)
+          message.data.currState && message.data.currState.BC
+            ? new Uint16(message.data.currState.BC)
             : new Uint16(0),
         DE:
-          message.currState && message.currState.DE
-            ? new Uint16(message.currState.DE)
+          message.data.currState && message.data.currState.DE
+            ? new Uint16(message.data.currState.DE)
             : new Uint16(0),
         HL:
-          message.currState && message.currState.HL
-            ? new Uint16(message.currState.HL)
+          message.data.currState && message.data.currState.HL
+            ? new Uint16(message.data.currState.HL)
             : new Uint16(0),
         IR:
-          message.currState && message.currState.IR
-            ? new Uint8(message.currState.IR)
+          message.data.currState && message.data.currState.IR
+            ? new Uint8(message.data.currState.IR)
             : new Uint8(0),
-        prefixed: message.currState && message.currState.prefixed,
+        prefixed: message.data.currState && message.data.currState.prefixed,
         operandValue:
-          message.currState && message.currState.operandValue
-            ? new Uint16(message.currState.operandValue)
+          message.data.currState && message.data.currState.operandValue
+            ? new Uint16(message.data.currState.operandValue)
             : new Uint16(0),
         IE:
-          message.currState && message.currState.IE
-            ? new Uint16(message.currState.IE)
+          message.data.currState && message.data.currState.IE
+            ? new Uint16(message.data.currState.IE)
             : new Uint16(0),
-        IME: message.currState && message.currState.IME,
-        Halted: message.currState && message.currState.Halted,
+        IME: message.data.currState && message.data.currState.IME,
+        Halted: message.data.currState && message.data.currState.Halted,
       } as CPUState);
 
-      setInstruction({
-        Mnemonic:
-          message.instruction && message.instruction.Mnemonic ? message.instruction.Mnemonic : "?",
-        Bytes: message.instruction && message.instruction.Bytes ? message.instruction.Bytes : "? ",
-        Cycles:
-          message.instruction && message.instruction.Cycles ? message.instruction.Cycles : "?",
-        Operands:
-          message.instruction && message.instruction.Operands ? message.instruction.Operands : [],
-        Immediate: message.instruction && message.instruction.Immediate,
-        Flags:
-          message.instruction && message.instruction.Flags ? { ...message.instruction.Flags } : {},
-      } as Instruction);
+      if (message.data && message.data.instruction) {
+        setInstruction({
+          Mnemonic: message.data.instruction.mnemonic ? message.data.instruction.mnemonic : "?",
+          Bytes: message.data.instruction.bytes ? message.data.instruction.bytes : "? ",
+          Cycles: message.data.instruction.cycles ? message.data.instruction.cycles : "?",
+          Operands: message.data.instruction.operands ? message.data.instruction.operands : [],
+          Immediate: message.data.instruction.immediate,
+          Flags: message.data.instruction.flags ? { ...message.data.instruction.flags } : {},
+        } as Instruction);
 
-      console.log("Received gameboy state:", message);
+        setMemory(message.data.memoryWrites);
+      }
     };
 
     socket.onclose = () => {
@@ -249,6 +278,10 @@ const Gameboy = () => {
       <h1>GameBoy Emulator</h1>
       <div>
         <CPUStateViewer state={currCPUState as CPUState} />
+        <Memory
+          address={memory ? memory.address : new Uint16(0)}
+          data={memory && memory.data ? memory.data : []}
+        />
         <button onClick={handleStep}>Step</button>
         <button onClick={handleRun}>Run</button>
       </div>
