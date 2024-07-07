@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Uint16, Uint8 } from "../types";
 
-import CPUStateViewer from "../widgets/cpu-state-viewer";
-import styles from "./index.module.css";
 import Memory, { MemoryWriter } from "../memory";
-import InstructionViewer from "../widgets/instruction-viewer";
+import CPUStateViewer from "../widgets/cpu-state-viewer";
 import FlagRegistersViewer from "../widgets/flag-registers-viewer";
+import InstructionViewer from "../widgets/instruction-viewer";
+import styles from "./index.module.css";
 
 export type CPUState = {
   PC: Uint16;
@@ -244,15 +244,7 @@ const Gameboy = () => {
       }
 
       if (message.data && message.data.memoryWrites) {
-        let memoryWrites: MemoryWriter[] = message.data.memoryWrites;
-        let newMemory: MemoryWriter[] = memoryWrites.map((mw, _) => {
-          return {
-            address: mw.address,
-            data: mw.data,
-          };
-        });
-
-        setMemory([...newMemory]);
+        setMemory([...message.data.memoryWrites]);
       }
     };
 
@@ -290,9 +282,25 @@ const Gameboy = () => {
     }
   };
 
+  const renderMemoryWrites = () =>
+    memory.map((mw, index) => {
+      return (
+        <Memory
+          key={index}
+          address={mw.address}
+          data={mw.data}
+          pc={currCPUState.PC.get()}
+          bytes={instruction.Bytes}
+        />
+      );
+    });
+
   return (
     <div className={styles.app}>
       <h1>GameBoy Emulator</h1>
+      <br />
+      <button onClick={handleStep}>Step</button>
+      <button onClick={handleRun}>Run</button>
       <div>
         <CPUStateViewer
           prevState={prevCPUState}
@@ -300,23 +308,13 @@ const Gameboy = () => {
           instruction={instruction}
           memory={memory}
         />
-        <FlagRegistersViewer cpuState={prevCPUState} />
+        <FlagRegistersViewer cpuState={currCPUState} />
         <br />
         <br />
         <InstructionViewer instruction={instruction} />
         <br />
 
-        {memory[0].data && memory[0].data.length > 0 && (
-          <Memory
-            address={memory[0].address}
-            data={memory[0].data}
-            pc={currCPUState.PC.get()}
-            bytes={instruction.Bytes}
-          />
-        )}
-        <br />
-        <button onClick={handleStep}>Step</button>
-        <button onClick={handleRun}>Run</button>
+        {renderMemoryWrites()}
       </div>
     </div>
   );

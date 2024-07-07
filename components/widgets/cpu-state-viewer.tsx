@@ -1,7 +1,6 @@
 import CMD_Line from "../command-line";
 import Entry from "../command-line/entry";
 import Field from "../command-line/field";
-import Flag from "../command-line/flag";
 import { NewLine, Separator, Spaces } from "../command-line/helper";
 import { GameboyState } from "../gameboy";
 
@@ -11,7 +10,7 @@ const CPUStateViewer = (props: GameboyState) => {
       <Entry>
         <Field label="PC" value={props.currState.PC.toHex()} />
         <Separator />
-        <Field label="SP" value={props.prevState.SP.toHex()} />
+        <Field label="SP" value={props.currState.SP.toHex()} />
         <Separator />
         <Field label="IR" value={props.currState.IR.toHex()} />
         <Spaces length={2} />
@@ -20,13 +19,13 @@ const CPUStateViewer = (props: GameboyState) => {
 
         <NewLine />
 
-        <Field label="AF" value={props.prevState.A.toHex() + props.prevState.F.toHex()} />
+        <Field label="AF" value={props.currState.A.toHex() + props.currState.F.toHex()} />
         <Separator />
-        <Field label="BC" value={props.prevState.BC.toHex()} />
+        <Field label="BC" value={props.currState.BC.toHex()} />
         <Separator />
-        <Field label="DE" value={props.prevState.DE.toHex()} />
+        <Field label="DE" value={props.currState.DE.toHex()} />
         <Separator />
-        <Field label="HL" value={props.prevState.HL.toHex()} />
+        <Field label="HL" value={props.currState.HL.toHex()} />
       </Entry>
     </CMD_Line>
   );
