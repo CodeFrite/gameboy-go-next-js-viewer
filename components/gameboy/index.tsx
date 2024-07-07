@@ -299,8 +299,11 @@ const Gameboy = () => {
     <div className={styles.app}>
       <h1>GameBoy Emulator</h1>
       <br />
-      <button onClick={handleStep}>Step</button>
-      <button onClick={handleRun}>Run</button>
+      <div>
+        <button onClick={handleStep}>Step</button>
+        <button onClick={handleRun}>Run</button>
+      </div>
+      <br />
       <div>
         <CPUStateViewer
           prevState={prevCPUState}
