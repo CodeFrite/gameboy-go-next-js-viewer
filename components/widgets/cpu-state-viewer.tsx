@@ -2,15 +2,11 @@ import CMD_Line from "../command-line";
 import Entry from "../command-line/entry";
 import Field from "../command-line/field";
 import { NewLine, Separator, Spaces } from "../command-line/helper";
+import InstructionViewer from "../command-line/instruction-viewer";
 import { Label } from "../command-line/label";
 import { GameboyState, Operand } from "../gameboy";
 
 const CPUStateViewer = (props: GameboyState) => {
-  const printOperand = (operand: Operand) => {
-    if (operand.immediate) return operand.name;
-    else return "[" + operand.name + "]";
-  };
-
   return (
     <CMD_Line>
       <Entry>
@@ -45,14 +41,8 @@ const CPUStateViewer = (props: GameboyState) => {
 
         <NewLine />
         <NewLine />
-        <Label color="white" bgColor="blue">
-          INSTR
-        </Label>
-        <Label>
-          {props.instruction.Mnemonic +
-            " " +
-            props.instruction.Operands.map((op, _) => printOperand(op)).join(", ")}
-        </Label>
+
+        <InstructionViewer instruction={props.instruction} />
       </Entry>
     </CMD_Line>
   );
