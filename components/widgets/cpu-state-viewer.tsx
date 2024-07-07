@@ -27,16 +27,6 @@ const CPUStateViewer = (props: GameboyState) => {
         <Field label="DE" value={props.prevState.DE.toHex()} />
         <Separator />
         <Field label="HL" value={props.prevState.HL.toHex()} />
-
-        <NewLine />
-
-        <Flag label="Z">{props.prevState.Z ? true : false}</Flag>
-        <Flag label="N">{props.prevState.N ? true : false}</Flag>
-        <Flag label="H">{props.prevState.H ? true : false}</Flag>
-        <Flag label="C">{props.prevState.C ? true : false}</Flag>
-
-        <NewLine />
-        <NewLine />
       </Entry>
     </CMD_Line>
   );

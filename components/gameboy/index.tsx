@@ -5,6 +5,7 @@ import CPUStateViewer from "../widgets/cpu-state-viewer";
 import styles from "./index.module.css";
 import Memory, { MemoryWriter } from "../memory";
 import InstructionViewer from "../widgets/instruction-viewer";
+import FlagRegistersViewer from "../widgets/flag-registers-viewer";
 
 export type CPUState = {
   PC: Uint16;
@@ -299,7 +300,11 @@ const Gameboy = () => {
           instruction={instruction}
           memory={memory}
         />
+        <FlagRegistersViewer cpuState={prevCPUState} />
+        <br />
+        <br />
         <InstructionViewer instruction={instruction} />
+        <br />
 
         {memory[0].data && memory[0].data.length > 0 && (
           <Memory
