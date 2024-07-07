@@ -1,10 +1,9 @@
 import CMD_Line from "../command-line";
 import Entry from "../command-line/entry";
 import Field from "../command-line/field";
+import Flag from "../command-line/flag";
 import { NewLine, Separator, Spaces } from "../command-line/helper";
-import InstructionViewer from "../command-line/instruction-viewer";
-import { Label } from "../command-line/label";
-import { GameboyState, Operand } from "../gameboy";
+import { GameboyState } from "../gameboy";
 
 const CPUStateViewer = (props: GameboyState) => {
   return (
@@ -31,18 +30,16 @@ const CPUStateViewer = (props: GameboyState) => {
 
         <NewLine />
 
-        <Field label="Z" value={props.prevState.Z ? 1 : 0} />
+        <Flag label="Z">{props.prevState.Z ? true : false}</Flag>
         <Separator />
-        <Field label="N" value={props.prevState.N ? 1 : 0} />
+        <Flag label="N">{props.prevState.N ? true : false}</Flag>
         <Separator />
-        <Field label="H" value={props.prevState.H ? 1 : 0} />
+        <Flag label="H">{props.prevState.H ? true : false}</Flag>
         <Separator />
-        <Field label="C" value={props.prevState.C ? 1 : 0} />
+        <Flag label="C">{props.prevState.C ? true : false}</Flag>
 
         <NewLine />
         <NewLine />
-
-        <InstructionViewer instruction={props.instruction} />
       </Entry>
     </CMD_Line>
   );

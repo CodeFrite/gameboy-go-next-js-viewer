@@ -4,6 +4,7 @@ import { Uint16, Uint8 } from "../types";
 import CPUStateViewer from "../widgets/cpu-state-viewer";
 import styles from "./index.module.css";
 import Memory, { MemoryWriter } from "../memory";
+import InstructionViewer from "../widgets/instruction-viewer";
 
 export type CPUState = {
   PC: Uint16;
@@ -298,6 +299,8 @@ const Gameboy = () => {
           instruction={instruction}
           memory={memory}
         />
+        <InstructionViewer instruction={instruction} />
+
         {memory[0].data && memory[0].data.length > 0 && (
           <Memory
             address={memory[0].address}
