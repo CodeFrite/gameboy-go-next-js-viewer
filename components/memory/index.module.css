@@ -11,6 +11,20 @@
   text-align: center;
 }
 
+.hex_cell_highlight {
+  padding-left: 5px;
+  padding-right: 5px;
+  text-align: center;
+  color: yellow;
+}
+
+.address {
+  padding-left: 5px;
+  padding-right: 5px;
+  text-align: center;
+  color: yellow;
+}
+
 .pc {
   color: black;
   background-color: yellow;
@@ -18,4 +32,8 @@
 .operand {
   color: white;
   background-color: blue;
+}
+
+.header {
+  color: yellow;
 }
