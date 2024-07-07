@@ -2,45 +2,57 @@ import CMD_Line from "../command-line";
 import Entry from "../command-line/entry";
 import Field from "../command-line/field";
 import { NewLine, Separator, Spaces } from "../command-line/helper";
-import { CPUState } from "../gameboy";
-import { Uint16 } from "../types";
+import { Label } from "../command-line/label";
+import { GameboyState, Operand } from "../gameboy";
 
-type CPUStateViewerProps = {
-  state: CPUState;
-};
-const CPUStateViewer = (props: CPUStateViewerProps) => {
+const CPUStateViewer = (props: GameboyState) => {
+  const printOperand = (operand: Operand) => {
+    if (operand.immediate) return operand.name;
+    else return "[" + operand.name + "]";
+  };
+
   return (
     <CMD_Line>
       <Entry>
-        <Field label="PC" value={props.state.PC.toHex()} />
+        <Field label="PC" value={props.currState.PC.toHex()} />
         <Separator />
-        <Field label="SP" value={props.state.SP.toHex()} />
+        <Field label="SP" value={props.prevState.SP.toHex()} />
         <Separator />
-        <Field label="IR" value={props.state.IR.toHex()} />
+        <Field label="IR" value={props.currState.IR.toHex()} />
         <Spaces length={2} />
         <Separator />
-        <Field label="OP" value={props.state.operandValue.toHex()} />
+        <Field label="OP" value={props.currState.operandValue.toHex()} />
 
         <NewLine />
 
-        <Field label="AF" value={props.state.A.toHex() + props.state.F.toHex()} />
+        <Field label="AF" value={props.prevState.A.toHex() + props.prevState.F.toHex()} />
         <Separator />
-        <Field label="BC" value={props.state.BC.toHex()} />
+        <Field label="BC" value={props.prevState.BC.toHex()} />
         <Separator />
-        <Field label="DE" value={props.state.DE.toHex()} />
+        <Field label="DE" value={props.prevState.DE.toHex()} />
         <Separator />
-        <Field label="HL" value={props.state.HL.toHex()} />
+        <Field label="HL" value={props.prevState.HL.toHex()} />
+
+        <NewLine />
+
+        <Field label="Z" value={props.prevState.Z ? 1 : 0} />
+        <Separator />
+        <Field label="N" value={props.prevState.N ? 1 : 0} />
+        <Separator />
+        <Field label="H" value={props.prevState.H ? 1 : 0} />
+        <Separator />
+        <Field label="C" value={props.prevState.C ? 1 : 0} />
 
         <NewLine />
         <NewLine />
-
-        <Field label="Z" value={props.state.Z ? 1 : 0} />
-        <Separator />
-        <Field label="N" value={props.state.N ? 1 : 0} />
-        <Separator />
-        <Field label="H" value={props.state.H ? 1 : 0} />
-        <Separator />
-        <Field label="C" value={props.state.C ? 1 : 0} />
+        <Label color="white" bgColor="blue">
+          INSTR
+        </Label>
+        <Label>
+          {props.instruction.Mnemonic +
+            " " +
+            props.instruction.Operands.map((op, _) => printOperand(op)).join(", ")}
+        </Label>
       </Entry>
     </CMD_Line>
   );

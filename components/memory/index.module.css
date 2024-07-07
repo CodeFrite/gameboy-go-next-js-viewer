@@ -1,6 +1,20 @@
 .memory_table {
+  font-size: 1.1em;
   font-family: Courier New, monospace;
+  font-weight: lighter;
+  color: lightblue;
 }
+
 .hex_cell {
-  margin-right: 5px;
+}
+
+.pc {
+  color: black;
+  font-weight: bold;
+  background-color: yellow;
+}
+.operand {
+  color: black;
+  font-weight: bold;
+  background-color: lightblue;
 }

@@ -3,7 +3,7 @@ import { Uint16, Uint8 } from "../types";
 
 import CPUStateViewer from "../widgets/cpu-state-viewer";
 import styles from "./index.module.css";
-import Memory, { MemoryProps } from "../memory";
+import Memory, { MemoryWriter } from "../memory";
 
 export type CPUState = {
   PC: Uint16;
@@ -25,7 +25,7 @@ export type CPUState = {
   Halted: boolean;
 };
 
-type Operand = {
+export type Operand = {
   name: string; // operand name: register, n8/n16 (immediate unsigned value), e8 (immediate signed value), a8/a16 (memory location)
   bytes: number; // number of bytes the operand takes (optional)
   immediate: boolean; // is the operand an immediate value or should it be fetched from memory
@@ -40,7 +40,7 @@ type Flags = {
   C: string | boolean; // Carry flag: set if there was a carry from bit 7 (result is 0xFF)
 };
 
-type Instruction = {
+export type Instruction = {
   Mnemonic: string; // instruction mnemonic
   Bytes: number; // number of bytes the instruction takes
   Cycles: number; // number of cycles the instruction takes to execute. The first element is the number of cycles the instruction takes when the condition is met, the second element is the number of cycles the instruction takes when the condition is not met (see RETZ for example)
@@ -53,7 +53,7 @@ export type GameboyState = {
   prevState: CPUState;
   currState: CPUState;
   instruction: Instruction;
-  memory: MemoryProps;
+  memory: MemoryWriter[];
 };
 
 const defaultCPUState = (): CPUState => ({
@@ -89,7 +89,7 @@ const defaultGameboyState = (): GameboyState => ({
   prevState: defaultCPUState(),
   currState: defaultCPUState(),
   instruction: defaultInstruction(),
-  memory: { address: new Uint16(0x0000), data: [] },
+  memory: [{ address: new Uint16(0x0000), data: [] }],
 });
 
 // TODO! Move this to server-go and expose through d.ts file
@@ -112,7 +112,12 @@ const Gameboy = () => {
   const [prevCPUState, setPrevCPUState] = useState<CPUState>(defaultCPUState());
   const [currCPUState, setCurrCPUState] = useState<CPUState>(defaultCPUState());
   const [instruction, setInstruction] = useState<Instruction>(defaultInstruction());
-  const [memory, setMemory] = useState<MemoryProps>();
+  const [memory, setMemory] = useState<MemoryWriter[]>([
+    {
+      address: new Uint16(0),
+      data: [] as string[],
+    },
+  ]);
 
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:8080/gameboy");
@@ -234,8 +239,18 @@ const Gameboy = () => {
           Immediate: message.data.instruction.immediate,
           Flags: message.data.instruction.flags ? { ...message.data.instruction.flags } : {},
         } as Instruction);
+      }
 
-        setMemory(message.data.memoryWrites);
+      if (message.data && message.data.memoryWrites) {
+        let memoryWrites: MemoryWriter[] = message.data.memoryWrites;
+        let newMemory: MemoryWriter[] = memoryWrites.map((mw, _) => {
+          return {
+            address: mw.address,
+            data: mw.data,
+          };
+        });
+
+        setMemory([...newMemory]);
       }
     };
 
@@ -277,11 +292,21 @@ const Gameboy = () => {
     <div className={styles.app}>
       <h1>GameBoy Emulator</h1>
       <div>
-        <CPUStateViewer state={currCPUState as CPUState} />
-        <Memory
-          address={memory ? memory.address : new Uint16(0)}
-          data={memory && memory.data ? memory.data : []}
+        <CPUStateViewer
+          prevState={prevCPUState}
+          currState={currCPUState}
+          instruction={instruction}
+          memory={memory}
         />
+        <br />
+        {memory[0].data && memory[0].data.length > 0 && (
+          <Memory
+            address={memory[0].address}
+            data={memory[0].data}
+            pc={currCPUState.PC.get()}
+            bytes={instruction.Bytes}
+          />
+        )}
         <button onClick={handleStep}>Step</button>
         <button onClick={handleRun}>Run</button>
       </div>
