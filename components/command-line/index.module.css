@@ -56,3 +56,13 @@
 .bg_color_red {
   background-color: red;
 }
+
+.value_watcher {
+  color: white;
+  background-color: black;
+}
+
+.value_watcher_changed {
+  color: black;
+  background-color: lightblue;
+}
