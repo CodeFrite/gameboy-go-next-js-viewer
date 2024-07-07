@@ -1,8 +1,5 @@
-import { Inter } from "next/font/google";
 import Head from "next/head";
 import Gameboy from "../components/gameboy";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   return (
