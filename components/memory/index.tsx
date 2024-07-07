@@ -13,7 +13,7 @@ export type MemoryProps = MemoryWriter & {
 
 const Memory = (props: MemoryProps) => {
   const formatMemoryCell = (value: string, index: number): string => {
-    let style = "style.hex_cell";
+    let style = styles.hex_cell;
     // pc is black/yellow
     if (index === props.pc) {
       style += " " + styles.pc;

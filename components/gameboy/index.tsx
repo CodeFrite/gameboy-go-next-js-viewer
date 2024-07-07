@@ -307,6 +307,7 @@ const Gameboy = () => {
             bytes={instruction.Bytes}
           />
         )}
+        <br />
         <button onClick={handleStep}>Step</button>
         <button onClick={handleRun}>Run</button>
       </div>
