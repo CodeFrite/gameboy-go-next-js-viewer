@@ -1,6 +1,7 @@
 import styles from "./index.module.css";
 
 export type MemoryWriter = {
+  name: string;
   address: number;
   data: string[];
 };
@@ -34,7 +35,6 @@ const Memory = (props: MemoryProps) => {
       if (index % 16 === 0) {
         // add memory table header
         if (index == 0) {
-          result.push(<br />);
           result.push(<span className={styles.hex_cell + " " + styles.header}>ADDR </span>);
           result.push(
             [
@@ -81,6 +81,7 @@ const Memory = (props: MemoryProps) => {
 
   return (
     <div>
+      <h2>{props.name}</h2>
       <div className={styles.memory_table}>{printMemory()}</div>
     </div>
   );

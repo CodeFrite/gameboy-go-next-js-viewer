@@ -91,7 +91,7 @@ const defaultGameboyState = (): GameboyState => ({
   prevState: defaultCPUState(),
   currState: defaultCPUState(),
   instruction: defaultInstruction(),
-  memory: [{ address: 0x0000, data: [] }],
+  memory: [{ name: "", address: 0x0000, data: [] }],
 });
 
 // TODO! Move this to server-go and expose through d.ts file
@@ -116,6 +116,7 @@ const Gameboy = () => {
   const [instruction, setInstruction] = useState<Instruction>(defaultInstruction());
   const [memory, setMemory] = useState<MemoryWriter[]>([
     {
+      name: "",
       address: 0,
       data: [] as string[],
     },
@@ -286,6 +287,7 @@ const Gameboy = () => {
     memory.map((mw, index) => {
       return (
         <Memory
+          name={mw.name}
           key={index}
           address={mw.address}
           data={mw.data}
