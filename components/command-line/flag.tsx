@@ -11,9 +11,15 @@ const Flag = (props: FlagProps) => {
   const onValue = "◉";
 
   return props.children ? (
-    <Label color={"green"}>{onValue}</Label>
+    <>
+      <Label>{props.label}</Label>
+      <Label color={"green"}>{onValue}</Label>
+    </>
   ) : (
-    <Label color={"red"}>{offValue}</Label>
+    <>
+      <Label>{props.label}</Label>
+      <Label color={"red"}>{offValue}</Label>
+    </>
   );
 };
 export default Flag;

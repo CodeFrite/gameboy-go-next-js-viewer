@@ -31,11 +31,8 @@ const CPUStateViewer = (props: GameboyState) => {
         <NewLine />
 
         <Flag label="Z">{props.prevState.Z ? true : false}</Flag>
-        <Separator />
         <Flag label="N">{props.prevState.N ? true : false}</Flag>
-        <Separator />
         <Flag label="H">{props.prevState.H ? true : false}</Flag>
-        <Separator />
         <Flag label="C">{props.prevState.C ? true : false}</Flag>
 
         <NewLine />
