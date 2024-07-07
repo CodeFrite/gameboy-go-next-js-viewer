@@ -89,7 +89,7 @@ const defaultGameboyState = (): GameboyState => ({
   prevState: defaultCPUState(),
   currState: defaultCPUState(),
   instruction: defaultInstruction(),
-  memory: [{ address: new Uint16(0x0000), data: [] }],
+  memory: [{ address: 0x0000, data: [] }],
 });
 
 // TODO! Move this to server-go and expose through d.ts file
@@ -114,7 +114,7 @@ const Gameboy = () => {
   const [instruction, setInstruction] = useState<Instruction>(defaultInstruction());
   const [memory, setMemory] = useState<MemoryWriter[]>([
     {
-      address: new Uint16(0),
+      address: 0,
       data: [] as string[],
     },
   ]);
@@ -298,7 +298,6 @@ const Gameboy = () => {
           instruction={instruction}
           memory={memory}
         />
-        <br />
         {memory[0].data && memory[0].data.length > 0 && (
           <Memory
             address={memory[0].address}

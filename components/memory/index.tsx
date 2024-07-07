@@ -2,7 +2,7 @@ import { Uint16 } from "../types";
 import styles from "./index.module.css";
 
 export type MemoryWriter = {
-  address: Uint16;
+  address: number;
   data: string[];
 };
 
@@ -34,7 +34,14 @@ const Memory = (props: MemoryProps) => {
       // Highlight the PC
 
       if (index % 16 === 0) {
+        // Add a line break every 16 cells and add the line address
         result.push(<br />);
+        result.push(
+          <span key={index} className={styles.hex_address}>
+            {(props.address + index).toString(16).padStart(4, "0").toUpperCase().substring(0, 3) +
+              "X"}
+          </span>
+        );
       }
       result.push(
         <span key={index} className={formatMemoryCell(value.substring(2), index)}>
