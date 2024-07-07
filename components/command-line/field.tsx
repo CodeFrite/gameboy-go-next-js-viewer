@@ -12,7 +12,7 @@ type FieldProps = {
 export const Field = (props: FieldProps) => {
   return (
     <>
-      <Label text={props.label} color={props.labelColor} />
+      <Label color={props.labelColor}>{props.label}</Label>
       <ValueWatcher id="" value={props.value}></ValueWatcher>
     </>
   );

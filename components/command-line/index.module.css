@@ -3,6 +3,56 @@
   color: white;
 }
 
+/* COLORS */
 .label {
   margin-right: 5px;
+}
+
+.color_white {
+  color: white;
+}
+.bg_color_white {
+  background-color: white;
+}
+
+.color_black {
+  color: black;
+}
+.bg_color_black {
+  background-color: black;
+}
+
+.color_blue {
+  color: blue;
+}
+.bg_color_blue {
+  background-color: blue;
+}
+
+.color_green {
+  color: green;
+}
+.bg_color_green {
+  background-color: green;
+}
+
+.color_yellow {
+  color: yellow;
+}
+.bg_color_yellow {
+  background-color: yellow;
+}
+
+.color_orange {
+  color: orange;
+}
+.bg_color_orange {
+  background-color: orange;
+}
+
+.color_red {
+  color: red;
+}
+.bg_color_red {
+  background-color: red;
 }
