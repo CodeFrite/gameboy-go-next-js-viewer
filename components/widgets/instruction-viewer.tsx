@@ -21,17 +21,16 @@ const InstructionViewer = (props: InstructionProps) => {
 
   return (
     <div>
+      <h2>Instruction Viewer</h2>
+      <Label color="white" bgColor="blue">
+        INSTR
+      </Label>
+      <Label>
+        {props.instruction.Mnemonic +
+          " " +
+          props.instruction.Operands.map((op, _) => formatOperand(op)).join(", ")}
+      </Label>
       <div>
-        <Label color="white" bgColor="blue">
-          INSTR
-        </Label>
-        <Label>
-          {props.instruction.Mnemonic +
-            " " +
-            props.instruction.Operands.map((op, _) => formatOperand(op)).join(", ")}
-        </Label>
-      </div>
-      <div style={{ display: "flex", flexFlow: "row" }}>
         <Field label="Bytes" value={props.instruction.Bytes}></Field>
         <Separator />
         <Field label="Cycles" value={props.instruction.Cycles}></Field>

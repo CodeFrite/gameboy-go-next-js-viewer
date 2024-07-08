@@ -298,28 +298,54 @@ const Gameboy = () => {
     });
 
   return (
-    <div className={styles.app}>
-      <h1>GameBoy Emulator</h1>
-      <br />
-      <div>
-        <button onClick={handleStep}>Step</button>
-        <button onClick={handleRun}>Run</button>
+    /* App */
+    <div className={styles.app_container}>
+      {/* Header */}
+      <div className={styles.header_container}>
+        {/* LOGO */}
+        <div className={styles.logo_container}>
+          <div className={styles.app_name}>gameboy-go</div>
+          <div className={styles.codefrite}>.codefrite</div>
+          <div className={styles.dev}>.dev</div>
+        </div>
+        {/* CPU State Viewer */}
+        <div className={styles.cpu_state_viewer}>
+          <CPUStateViewer
+            prevState={prevCPUState}
+            currState={currCPUState}
+            instruction={instruction}
+            memory={memory}
+          />
+          {/* Flag Registers Viewer */}
+        </div>
+        <div>
+          <FlagRegistersViewer cpuState={currCPUState} />
+        </div>
       </div>
-      <br />
-      <div>
-        <CPUStateViewer
-          prevState={prevCPUState}
-          currState={currCPUState}
-          instruction={instruction}
-          memory={memory}
-        />
-        <FlagRegistersViewer cpuState={currCPUState} />
-        <br />
-        <br />
-        <InstructionViewer instruction={instruction} />
-        <br />
+      {/* Main Container */}
+      <div className={styles.main_container}>
+        {/* Memory Container 1 */}
+        <div className={styles.memory_container}>
+          <div>{renderMemoryWrites()[0]}</div>
+          <div>{renderMemoryWrites()[3]}</div>
+        </div>
 
-        {renderMemoryWrites()}
+        {/* Memory Container 2 */}
+        <div className={styles.memory_container}>
+          <div>{renderMemoryWrites()[4]}</div>
+          <div>{renderMemoryWrites()[1]}</div>
+          <div>{renderMemoryWrites()[2]}</div>
+        </div>
+
+        {/* Instruction Viewer */}
+        <div className={styles.instruction_viewer}>
+          <InstructionViewer instruction={instruction} />
+          <br />
+          <div>
+            <button onClick={handleStep}>Step</button>
+            <button onClick={handleRun}>Run</button>
+          </div>
+        </div>
       </div>
     </div>
   );
