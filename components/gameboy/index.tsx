@@ -4,8 +4,8 @@ import { Uint16, Uint8 } from "../types";
 import Memory, { MemoryWriter } from "../memory";
 import CPUStateViewer from "../widgets/cpu-state-viewer";
 import FlagRegistersViewer from "../widgets/flag-registers-viewer";
-import InstructionViewer from "../widgets/instruction-viewer";
 import styles from "./index.module.css";
+import InstructionViewer from "../widgets/instruction-viewer";
 
 export type CPUState = {
   PC: Uint16;
@@ -300,14 +300,24 @@ const Gameboy = () => {
   return (
     /* App */
     <div className={styles.app_container}>
-      {/* Header */}
-      <div className={styles.header_container}>
+      {/* Left Column */}
+      <div className={styles.column}>
+        <br />
         {/* LOGO */}
         <div className={styles.logo_container}>
           <div className={styles.app_name}>gameboy-go</div>
           <div className={styles.codefrite}>.codefrite</div>
           <div className={styles.dev}>.dev</div>
         </div>
+        {/* Memory Container 1 */}
+        <div className={styles.memory_container}>
+          <div>{renderMemoryWrites()[0]}</div>
+          <div>{renderMemoryWrites()[3]}</div>
+        </div>
+      </div>
+      {/* Middle Column */}
+      <div className={styles.column}>
+        <br />
         {/* CPU State Viewer */}
         <div className={styles.cpu_state_viewer}>
           <CPUStateViewer
@@ -316,35 +326,27 @@ const Gameboy = () => {
             instruction={instruction}
             memory={memory}
           />
-          {/* Flag Registers Viewer */}
         </div>
-        <div>
-          <FlagRegistersViewer cpuState={currCPUState} />
-        </div>
-      </div>
-      {/* Main Container */}
-      <div className={styles.main_container}>
-        {/* Memory Container 1 */}
-        <div className={styles.memory_container}>
-          <div>{renderMemoryWrites()[0]}</div>
-          <div>{renderMemoryWrites()[3]}</div>
-        </div>
-
         {/* Memory Container 2 */}
         <div className={styles.memory_container}>
           <div>{renderMemoryWrites()[4]}</div>
           <div>{renderMemoryWrites()[1]}</div>
           <div>{renderMemoryWrites()[2]}</div>
         </div>
-
+      </div>
+      {/* Right Column */}
+      <div className={styles.column}>
+        <br />
         {/* Instruction Viewer */}
-        <div className={styles.instruction_viewer}>
-          <InstructionViewer instruction={instruction} />
-          <br />
-          <div>
-            <button onClick={handleStep}>Step</button>
-            <button onClick={handleRun}>Run</button>
-          </div>
+        <div className={styles.cpu_flag_registers_viewer}>
+          <FlagRegistersViewer cpuState={currCPUState} />
+        </div>
+        <br />
+        <br />
+        <InstructionViewer instruction={instruction} />
+        <div>
+          <button onClick={handleStep}>Step</button>
+          <button onClick={handleRun}>Run</button>
         </div>
       </div>
     </div>

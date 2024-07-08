@@ -1,8 +1,7 @@
-import Entry from "../command-line/entry";
-import Field from "../command-line/field";
-import { Separator } from "../command-line/helper";
-import { Label } from "../command-line/label";
-import { Instruction, Operand } from "../gameboy";
+import Field from "../../command-line/field";
+import { Separator } from "../../command-line/helper";
+import { Label } from "../../command-line/label";
+import { Instruction, Operand } from "../../gameboy";
 
 type InstructionProps = {
   instruction: Instruction;
