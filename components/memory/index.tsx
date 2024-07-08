@@ -29,34 +29,18 @@ const Memory = (props: MemoryProps) => {
 
   const printMemory = () => {
     return props.data.map((value, index) => {
+      if (index >= 16 * 16) return;
       let result = [];
       // Highlight the PC
 
       if (index % 16 === 0) {
         // add memory table header
         if (index == 0) {
-          result.push(<span className={styles.hex_cell + " " + styles.header}>ADDR </span>);
+          result.push(<span className={`${styles.hex_cell} ${styles.header}`}>ADDR </span>);
           result.push(
-            [
-              "X0",
-              "X1",
-              "X2",
-              "X3",
-              "X4",
-              "X5",
-              "X6",
-              "X7",
-              "X8",
-              "X9",
-              "XA",
-              "XB",
-              "XC",
-              "XD",
-              "XE",
-              "XF",
-            ].map((value) => (
-              <span key={index + "-header"} className={styles.hex_cell + " " + styles.header}>
-                {value}
+            Array.from({ length: 16 }, (_, index) => (
+              <span key={index + "-header"} className={`${styles.hex_cell} ${styles.header}`}>
+                X{index.toString(16).toUpperCase()}
               </span>
             ))
           );
@@ -70,6 +54,7 @@ const Memory = (props: MemoryProps) => {
           </span>
         );
       }
+      // add the value of the memory cell
       result.push(
         <span key={index} className={formatMemoryCell(value.substring(2), index)}>
           {value.substring(2)}
