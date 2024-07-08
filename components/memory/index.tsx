@@ -66,7 +66,7 @@ const Memory = (props: MemoryProps) => {
 
   return (
     <div>
-      <h2>{props.name}</h2>
+      <h2 className={styles.memory_name}>{props.name + " >"}</h2>
       <div className={styles.memory_table}>{printMemory()}</div>
     </div>
   );
