@@ -1,6 +1,6 @@
 import Entry from "../command-line/entry";
 import Field from "../command-line/field";
-import { NewLine, Separator } from "../command-line/helper";
+import { Separator } from "../command-line/helper";
 import { Label } from "../command-line/label";
 import { Instruction, Operand } from "../gameboy";
 
@@ -20,20 +20,23 @@ const InstructionViewer = (props: InstructionProps) => {
   };
 
   return (
-    <Entry>
-      <Label color="white" bgColor="blue">
-        INSTR
-      </Label>
-      <Label>
-        {props.instruction.Mnemonic +
-          " " +
-          props.instruction.Operands.map((op, _) => formatOperand(op)).join(", ")}
-      </Label>
-      <NewLine />
-      <Field label="Bytes" value={props.instruction.Bytes}></Field>
-      <Separator />
-      <Field label="Cycles" value={props.instruction.Cycles}></Field>
-    </Entry>
+    <div>
+      <div>
+        <Label color="white" bgColor="blue">
+          INSTR
+        </Label>
+        <Label>
+          {props.instruction.Mnemonic +
+            " " +
+            props.instruction.Operands.map((op, _) => formatOperand(op)).join(", ")}
+        </Label>
+      </div>
+      <div style={{ display: "flex", flexFlow: "row" }}>
+        <Field label="Bytes" value={props.instruction.Bytes}></Field>
+        <Separator />
+        <Field label="Cycles" value={props.instruction.Cycles}></Field>
+      </div>
+    </div>
   );
 };
 
