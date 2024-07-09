@@ -7,12 +7,15 @@ import ValueWatcher from "./value-watcher";
 type FieldProps = {
   label: string;
   labelColor?: BrandColor;
+  labelBgColor?: BrandColor;
   value: Uint8 | Uint16 | boolean | string | number | null | undefined;
 };
 export const Field = (props: FieldProps) => {
   return (
     <>
-      <Label color={props.labelColor}>{props.label}</Label>
+      <Label color={props.labelColor} bgColor={props.labelBgColor}>
+        {props.label}
+      </Label>
       <ValueWatcher id="" value={props.value}></ValueWatcher>
     </>
   );

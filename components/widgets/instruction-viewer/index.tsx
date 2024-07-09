@@ -20,9 +20,11 @@ const InstructionViewer = (props: InstructionProps) => {
 
   return (
     <div>
-      <h2>Instruction Viewer</h2>
-      <Label color="white" bgColor="blue">
-        INSTR
+      <br />
+      <br />
+      <br />
+      <Label color="blue" bgColor="black">
+        {"> INSTR "}
       </Label>
       <Label>
         {props.instruction.Mnemonic +
@@ -30,9 +32,40 @@ const InstructionViewer = (props: InstructionProps) => {
           props.instruction.Operands.map((op, _) => formatOperand(op)).join(", ")}
       </Label>
       <div>
-        <Field label="Bytes" value={props.instruction.Bytes}></Field>
+        * <Field label="Bytes" value={props.instruction.Bytes}></Field>
         <Separator />
         <Field label="Cycles" value={props.instruction.Cycles}></Field>
+      </div>
+      <Label color="yellow">* DESCR</Label>
+      <div>
+        <Label color="orange">* Flags</Label>
+        <Label color="black" bgColor="orange">
+          Z
+        </Label>
+        <Label color="black" bgColor="white">
+          {props.instruction.Flags.Z.toString()}
+        </Label>
+        <Separator />
+        <Label color="black" bgColor="orange">
+          N
+        </Label>
+        <Label color="black" bgColor="white">
+          {props.instruction.Flags.N.toString()}
+        </Label>
+        <Separator />
+        <Label color="black" bgColor="orange">
+          H
+        </Label>
+        <Label color="black" bgColor="white">
+          {props.instruction.Flags.H.toString()}
+        </Label>
+        <Separator />
+        <Label color="black" bgColor="orange">
+          C
+        </Label>
+        <Label color="black" bgColor="white">
+          {props.instruction.Flags.C.toString()}
+        </Label>
       </div>
     </div>
   );
