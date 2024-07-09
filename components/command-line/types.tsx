@@ -6,6 +6,7 @@ export type BrandColor =
   | "dark-gray"
   | "blue"
   | "turquoise"
+  | "purple"
   | "green"
   | "yellow"
   | "orange"

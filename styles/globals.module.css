@@ -28,6 +28,15 @@
   color: var(--azure);
 }
 
+.color_gray {
+  color: var(--gray);
+}
+
+.color_purple,
+.color_electric-purple {
+  color: var(--electric-purple);
+}
+
 /* background color */
 .bg_color_white {
   color: var(--white);
@@ -56,4 +65,13 @@
 .bg_color_azure,
 .bg_color_blue {
   color: var(--azure);
+}
+
+.bg_color_gray {
+  color: var(--gray);
+}
+
+.bg_color_purple,
+.bg_color_electric-purple {
+  color: var(--electric-purple);
 }

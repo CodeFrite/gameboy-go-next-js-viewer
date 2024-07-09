@@ -1,6 +1,6 @@
 import { Label } from "./label";
 
-type FlagProps = {
+export type FlagProps = {
   children: boolean;
   label: string;
   trueColor?: string;

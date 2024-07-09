@@ -36,12 +36,10 @@ export type Operand = {
   decrement: boolean;
 };
 
-type Flags = {
-  Z: string | boolean; // Zero flag: set if the result is zero (all bits are 0)
-  N: string | boolean; // Subtract flag: set if the instruction is a subtraction
-  H: string | boolean; // Half carry flag: set if there was a carry from bit 3 (result is 0x0F)
-  C: string | boolean; // Carry flag: set if there was a carry from bit 7 (result is 0xFF)
-};
+// Zero flag: set if the result is zero (all bits are 0)
+// Subtract flag: set if the instruction is a subtraction
+// Half carry flag: set if there was a carry from bit 3 (result is 0x0F)
+// Carry flag: set if there was a carry from bit 7 (result is 0xFF)
 
 export type Instruction = {
   Mnemonic: string; // instruction mnemonic
@@ -49,7 +47,7 @@ export type Instruction = {
   Cycles: number; // number of cycles the instruction takes to execute. The first element is the number of cycles the instruction takes when the condition is met, the second element is the number of cycles the instruction takes when the condition is not met (see RETZ for example)
   Operands: Operand[]; // instruction operands used as function arguments
   Immediate: boolean; // is the operand an immediate value or should it be fetched from memory
-  Flags: Flags;
+  Flags: { [key: string]: string };
 };
 
 export type GameboyState = {
@@ -85,7 +83,7 @@ const defaultInstruction = (): Instruction => ({
   Cycles: 0,
   Operands: [],
   Immediate: false,
-  Flags: { Z: false, N: false, H: false, C: false },
+  Flags: { Z: "0", N: "0", H: "0", C: "0" },
 });
 
 const defaultGameboyState = (): GameboyState => ({
