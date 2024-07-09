@@ -287,7 +287,7 @@ const Gameboy = () => {
       return (
         <Memory
           name={mw.name}
-          key={index}
+          key={mw.name}
           address={mw.address}
           data={mw.data}
           pc={currCPUState.PC.get()}
