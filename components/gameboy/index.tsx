@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { EventHandler, useEffect, useRef, useState } from "react";
 import { Uint16, Uint8 } from "../types";
 
 import Memory, { MemoryWriter } from "../memory";
@@ -110,7 +110,7 @@ type Message<T> = {
 };
 
 const Gameboy = () => {
-  const [ws, setWs] = useState<WebSocket | null>(null);
+  const ws = useRef<WebSocket | null>(null);
   const [prevCPUState, setPrevCPUState] = useState<CPUState>(defaultCPUState());
   const [currCPUState, setCurrCPUState] = useState<CPUState>(defaultCPUState());
   const [instruction, setInstruction] = useState<Instruction>(defaultInstruction());
@@ -121,7 +121,11 @@ const Gameboy = () => {
       data: [] as string[],
     },
   ]);
+  const keyReleased = useRef<boolean>(true); // avoid rebouncing key presses effect by ignoring further keydown events before this flag is reset on keyup
 
+  /**
+   * WebSocket connection to the gameboy-go server
+   */
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:8080/gameboy");
 
@@ -257,7 +261,7 @@ const Gameboy = () => {
       console.error("WebSocket error:", error);
     };
 
-    setWs(socket);
+    ws.current = socket;
 
     // Clean up WebSocket connection on component unmount
     return () => {
@@ -265,21 +269,61 @@ const Gameboy = () => {
     };
   }, []);
 
+  /**
+   * Redirect keypress events to the gameboy component
+   */
+  useEffect(() => {
+    const handleKeyDown = (ev: KeyboardEvent): void => {
+      ev.preventDefault();
+      switch (ev.code) {
+        case "Space":
+          if (keyReleased.current) {
+            (() => {
+              handleStep();
+            })();
+            keyReleased.current = false;
+          }
+          break;
+        default:
+          console.log("No action for keypress: ", ev.code);
+      }
+    };
+
+    const handleKeyUp = (ev: KeyboardEvent): void => {
+      ev.preventDefault();
+      switch (ev.code) {
+        case "Space":
+          if (!keyReleased.current) {
+            keyReleased.current = true;
+          }
+          break;
+        default:
+          console.log("No action for keypress: ", ev.code);
+      }
+    };
+    window.addEventListener("keydown", (ev: KeyboardEvent) => {
+      handleKeyDown(ev);
+    });
+    window.addEventListener("keyup", (ev: KeyboardEvent) => {
+      handleKeyUp(ev);
+    });
+
+    return () => {
+      window.removeEventListener("keyup", (ev: KeyboardEvent) => {
+        handleKeyUp(ev);
+      });
+    };
+  }, []);
+
   const handleStep = () => {
-    if (ws) {
-      ws.send("step");
+    if (ws && ws.current) {
+      ws.current.send("step");
     }
   };
 
   const handleRun = () => {
-    if (ws) {
-      ws.send("run");
-    }
-  };
-
-  const handleKeypress = (key: string) => {
-    if (ws) {
-      ws.send(JSON.stringify({ type: "keypress", key }));
+    if (ws && ws.current) {
+      ws.current.send("run");
     }
   };
 
@@ -348,10 +392,6 @@ const Gameboy = () => {
         <NewLine />
         <div className={styles.updates_viewer}>
           <UpdatesViewer prevCpuState={prevCPUState} currCpuState={currCPUState} />
-        </div>
-        <div>
-          <button onClick={handleStep}>Step</button>
-          <button onClick={handleRun}>Run</button>
         </div>
       </div>
     </div>
