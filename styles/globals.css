@@ -1,3 +1,23 @@
+/*** Brand Colors ***/
+:root {
+  --white: #ffffff;
+  --canary: #ffe70aff;
+  --yellow: #ffe70aff;
+  --harlequin: #5df128ff;
+  --green: #5df128ff;
+  --orange-pantone: #fb5607ff;
+  --orange: #fb5607ff;
+  --shocking-pink: #ff00b3ff;
+  --pink: #ff00b3ff;
+  --electric-purple: #b739edff;
+  --purple: #b739edff;
+  --azure: #3a86ffff;
+  --blue: #3a86ffff;
+  --eerie-black: #1d1e20ff;
+  --black: #1d1e20ff;
+}
+
+/* Google Fonts */
 @font-face {
   font-family: "Permanent Marker";
   src: url("/google-fonts/Permanent_Marker/PermanentMarker-Regular.ttf") format("truetype");
@@ -6,7 +26,7 @@
 }
 
 body {
-  background-color: black;
+  background-color: var(--black);
   font-family: "IBM Plex Mono", monospace;
-  color: white;
+  color: var(--white);
 }

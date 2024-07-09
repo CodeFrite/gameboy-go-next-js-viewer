@@ -1,7 +1,7 @@
 .memory_table {
   font-size: 1.1em;
   font-weight: 400;
-  color: lightblue;
+  color: var(--lightblue);
 }
 
 .hex_cell {
@@ -15,29 +15,29 @@
   padding-left: 5px;
   padding-right: 5px;
   text-align: center;
-  color: yellow;
+  color: var(--yellow);
 }
 
 .address {
   padding-left: 5px;
   padding-right: 5px;
   text-align: center;
-  color: yellow;
+  color: var(--yellow);
 }
 
 .pc {
-  color: black;
-  background-color: yellow;
+  color: var(--black);
+  background-color: var(--yellow);
 }
 .operand {
-  color: white;
-  background-color: blue;
+  color: var(--white);
+  background-color: var(--blue);
 }
 
 .header {
-  color: yellow;
+  color: var(--yellow);
 }
 
 .memory_name {
-  color: rgb(220, 40, 96);
+  color: var(--pink);
 }

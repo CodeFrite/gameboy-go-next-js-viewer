@@ -48,21 +48,21 @@
 }
 
 .app_name {
-  color: white;
-  background-color: black;
+  color: var(--white);
+  background-color: var(--black);
   padding: inherit;
 }
 
 .codefrite {
-  color: black;
-  background-color: yellow;
+  color: var(--black);
+  background-color: var(--yellow);
   margin-left: 0px;
   padding: inherit;
 }
 
 .dev {
-  color: black;
-  background-color: cyan;
+  color: var(--black);
+  background-color: var(--cyan);
   margin-left: 0px;
   padding: inherit;
 }
