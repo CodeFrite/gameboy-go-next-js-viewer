@@ -7,6 +7,7 @@ import FlagRegistersViewer from "../widgets/flag-registers-viewer";
 import styles from "./index.module.css";
 import InstructionViewer from "../widgets/instruction-viewer";
 import UpdatesViewer from "../widgets/updates-viewer";
+import { NewLine } from "../command-line/helper";
 
 export type CPUState = {
   PC: Uint16;
@@ -343,8 +344,11 @@ const Gameboy = () => {
         <div className={styles.instruction_viewer}>
           <InstructionViewer instruction={instruction} />
         </div>
-        <br />
-        <UpdatesViewer prevCpuState={prevCPUState} currCpuState={currCPUState} />
+        <NewLine />
+        <NewLine />
+        <div className={styles.updates_viewer}>
+          <UpdatesViewer prevCpuState={prevCPUState} currCpuState={currCPUState} />
+        </div>
         <div>
           <button onClick={handleStep}>Step</button>
           <button onClick={handleRun}>Run</button>

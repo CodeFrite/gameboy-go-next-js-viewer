@@ -34,44 +34,44 @@
 
 .color_purple,
 .color_electric-purple {
-  color: var(--electric-purple);
+  color: var(--purple);
 }
 
 /* background color */
 .bg_color_white {
-  color: var(--white);
+  background-color: var(--white);
 }
 
 .bg_color_canary,
 .bg_color_yellow {
-  color: var(--canary);
+  background-color: var(--canary);
 }
 
 .bg_color_harlequin,
 .bg_color_green {
-  color: var(--harlequin);
+  background-color: var(--harlequin);
 }
 
 .bg_color_orange-pantone,
 .bg_color_orange {
-  color: var(--orange-pantone);
+  background-color: var(--orange-pantone);
 }
 
 .bg_color_shocking-pink,
 .bg_color_pink {
-  color: var(--shocking-pink);
+  background-color: var(--shocking-pink);
 }
 
 .bg_color_azure,
 .bg_color_blue {
-  color: var(--azure);
+  background-color: var(--azure);
 }
 
 .bg_color_gray {
-  color: var(--gray);
+  background-color: var(--gray);
 }
 
 .bg_color_purple,
 .bg_color_electric-purple {
-  color: var(--electric-purple);
+  background-color: var(--purple);
 }

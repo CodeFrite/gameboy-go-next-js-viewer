@@ -94,7 +94,16 @@
 .instruction_viewer {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: start;
+  margin-left: 25px;
+  margin-right: 25px;
+  font-size: 1.7em;
+}
+
+.updates_viewer {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
   margin-left: 25px;
   margin-right: 25px;
   font-size: 1.7em;

@@ -8,15 +8,16 @@ type LabelProps = {
   bgColor?: BrandColor;
 };
 export const Label = (props: LabelProps) => {
-  const getClassNames = () => {
+  const getClassNames = (): string => {
     let classNames = [styles.label];
-    if (props.color) {
+    if (props.color !== undefined) {
       classNames.push(gstyles["color_" + props.color]);
     }
-    if (props.bgColor) {
+    if (props.bgColor !== undefined) {
       classNames.push(gstyles["bg_color_" + props.bgColor]);
     }
     return classNames.join(" ");
   };
+
   return <span className={getClassNames()}>{props.children}</span>;
 };
