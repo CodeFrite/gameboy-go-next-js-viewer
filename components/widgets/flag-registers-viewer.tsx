@@ -9,10 +9,10 @@ type FlagRegistersViewerProps = {
 const FlagRegistersViewer = (props: FlagRegistersViewerProps) => {
   return (
     <Entry>
-      <Flag label="Z" children={props.cpuState.Z} />
-      <Flag label="N" children={props.cpuState.N} />
-      <Flag label="H" children={props.cpuState.H} />
-      <Flag label="C" children={props.cpuState.C} />
+      <Flag label="Z">{props.cpuState.Z}</Flag>
+      <Flag label="N">{props.cpuState.N}</Flag>
+      <Flag label="H">{props.cpuState.H}</Flag>
+      <Flag label="C">{props.cpuState.C}</Flag>
     </Entry>
   );
 };
