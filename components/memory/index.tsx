@@ -162,8 +162,8 @@ const Memory = (props: MemoryProps) => {
     // depending on the mode, the first line from which to render will be different
     const startLine = getStartLine();
     console.log("startLine", startLine);
-    // for each line up to line 16
-    for (let line = startLine; line < startLine + 16; line++) {
+    // for each line up to line 16 or the last line of memory
+    for (let line = startLine; line < startLine + 16 && line < props.data.length / 16; line++) {
       // add memory table header before rendering the first memory line
       if (line === startLine) {
         result.push(...printMemoryTableHeader(line));
