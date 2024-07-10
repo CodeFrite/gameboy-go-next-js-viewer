@@ -82,8 +82,8 @@ const Memory = (props: MemoryProps) => {
           return printPC(value, address + memoryIndex);
           // highlight the operands
         } else if (
-          props.pc >= address + memoryIndex &&
-          props.pc <= address + memoryIndex + props.bytes
+          address + memoryIndex > props.pc &&
+          address + memoryIndex < props.pc + props.bytes
         ) {
           return printOperand(value, address + memoryIndex);
         }
