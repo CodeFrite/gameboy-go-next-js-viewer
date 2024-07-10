@@ -11,4 +11,10 @@
   flex-wrap: wrap;
   align-items: start;
   font-size: 0.8em;
+  gap: 10px;
+}
+
+.update {
+  padding-left: 10px;
+  padding-right: 10px;
 }

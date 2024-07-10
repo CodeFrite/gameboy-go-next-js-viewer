@@ -12,7 +12,7 @@ type UpdateProps = {
 
 const UpdatesViewer = (props: UpdateProps) => {
   const renderUpdate = (label: string, prev: string, curr: string) => (
-    <div>
+    <div className="styles.update">
       <Label color="white" bgColor="purple">
         {label}
       </Label>
