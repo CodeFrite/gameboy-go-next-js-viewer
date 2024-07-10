@@ -114,13 +114,7 @@ const Gameboy = () => {
   const [prevCPUState, setPrevCPUState] = useState<CPUState>(defaultCPUState());
   const [currCPUState, setCurrCPUState] = useState<CPUState>(defaultCPUState());
   const [instruction, setInstruction] = useState<Instruction>(defaultInstruction());
-  const [memory, setMemory] = useState<MemoryWriter[]>([
-    {
-      name: "",
-      address: 0,
-      data: [] as string[],
-    },
-  ]);
+  const [memory, setMemory] = useState<MemoryWriter[]>([]);
   const keyReleased = useRef<boolean>(true); // avoid rebouncing key presses effect by ignoring further keydown events before this flag is reset on keyup
 
   /**
@@ -327,20 +321,6 @@ const Gameboy = () => {
     }
   };
 
-  const renderMemoryWrites = () =>
-    memory.map((mw, index) => {
-      return (
-        <Memory
-          name={mw.name}
-          key={mw.name}
-          address={mw.address}
-          data={mw.data}
-          pc={currCPUState.PC.get()}
-          bytes={instruction.Bytes}
-        />
-      );
-    });
-
   return (
     /* App */
     <div className={styles.app_container}>
@@ -355,10 +335,38 @@ const Gameboy = () => {
         </div>
         {/* Memory Container 1 */}
         <div className={styles.memory_container}>
-          <div>{renderMemoryWrites()[0]}</div>
-          <div>{renderMemoryWrites()[3]}</div>
+          {/* boot rom */}
+          {/* boot rom */}
+          <div>
+            {memory.length > 0 && (
+              <Memory
+                name={memory[0].name}
+                key={memory[0].name}
+                address={memory[0].address}
+                data={memory[0].data}
+                pc={currCPUState.PC.get()}
+                bytes={instruction.Bytes}
+                viewPort="end"
+              />
+            )}
+          </div>
+
+          <div>
+            {memory.length > 0 && (
+              <Memory
+                name={memory[3].name}
+                key={memory[3].name}
+                address={memory[3].address}
+                data={memory[3].data}
+                pc={currCPUState.PC.get()}
+                bytes={instruction.Bytes}
+                viewPort="pc"
+              />
+            )}
+          </div>
         </div>
       </div>
+
       {/* Middle Column */}
       <div className={styles.column}>
         <br />
@@ -372,10 +380,18 @@ const Gameboy = () => {
           />
         </div>
         {/* Memory Container 2 */}
-        <div className={styles.memory_container}>
-          <div>{renderMemoryWrites()[4]}</div>
-          <div>{renderMemoryWrites()[1]}</div>
-          <div>{renderMemoryWrites()[2]}</div>
+        <div>
+          {memory.length > 0 && (
+            <Memory
+              name={memory[4].name}
+              key={memory[4].name}
+              address={memory[4].address}
+              data={memory[4].data}
+              pc={currCPUState.PC.get()}
+              bytes={instruction.Bytes}
+              viewPort="end"
+            />
+          )}
         </div>
       </div>
       {/* Right Column */}
