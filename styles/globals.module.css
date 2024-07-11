@@ -1,4 +1,4 @@
-/* font color */
+/** font color */
 .color_white {
   color: var(--white);
 }
@@ -37,7 +37,11 @@
   color: var(--purple);
 }
 
-/* background color */
+.color_cyan {
+  color: var(--cyan);
+}
+
+/** background color */
 .bg_color_white {
   background-color: var(--white);
 }
@@ -74,4 +78,8 @@
 .bg_color_purple,
 .bg_color_electric-purple {
   background-color: var(--purple);
+}
+
+.bg_color_cyan {
+  background-color: var(--cyan);
 }

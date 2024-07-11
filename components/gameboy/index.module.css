@@ -39,7 +39,7 @@
 .logo_container {
   display: flex;
   flex-direction: row;
-  font-size: 3em;
+  font-size: 2.5em;
   align-items: center;
   margin-left: 5px;
   font-family: "Permanent Marker";
@@ -87,8 +87,6 @@
   font-size: 1.7em;
   flex-direction: column;
   align-items: start;
-  margin-left: 25px;
-  margin-right: 25px;
 }
 
 .instruction_viewer {
@@ -96,7 +94,6 @@
   flex-direction: column;
   align-items: start;
   margin-left: 25px;
-  margin-right: 25px;
   font-size: 1.7em;
 }
 
