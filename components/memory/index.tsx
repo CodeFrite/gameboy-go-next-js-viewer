@@ -8,7 +8,8 @@ export type MemoryWriter = {
   data: string[];
 };
 
-export type MemoryProps = MemoryWriter & {
+export type MemoryProps = {
+  memory: MemoryWriter;
   pc: number;
   bytes: number;
   viewPort?: "start" | "end" | "pc" | "prev-pc";
@@ -64,19 +65,19 @@ const Memory = (props: MemoryProps) => {
   const printMemoryLine = (line: number): JSX.Element[] => {
     let result: JSX.Element[] = [];
     // print line break
-    result.push(<br key={"line-break-" + props.name + "-" + line} />);
+    result.push(<br key={"line-break-" + props.memory.name + "-" + line} />);
     // print line memory address
-    const address = props.address + line * 16;
+    const address = props.memory.address + line * 16;
     result.push(
       <span
-        key={"line-address-" + props.name + "-" + line}
+        key={"line-address-" + props.memory.name + "-" + line}
         className={styles.hex_cell + " " + gStyles.color_yellow}>
         {address.toString(16).padStart(4, "0").substring(0, 3) + "X"}
       </span>
     );
     // print the 16 memory cells of the current line
     result.push(
-      ...props.data.slice(line * 16, (line + 1) * 16).map((value, memoryIndex) => {
+      ...props.memory.data.slice(line * 16, (line + 1) * 16).map((value, memoryIndex) => {
         // highlight the program counter
         if (props.pc === address + memoryIndex) {
           return printPC(value, address + memoryIndex);
@@ -103,7 +104,7 @@ const Memory = (props: MemoryProps) => {
     let result: JSX.Element[] = [];
     result.push(
       <span
-        key={"table-label-" + props.name + "-" + line}
+        key={"table-label-" + props.memory.name + "-" + line}
         className={`${styles.hex_cell} ${styles.header}`}>
         ADDR
       </span>
@@ -111,7 +112,7 @@ const Memory = (props: MemoryProps) => {
     result.push(
       ...Array.from({ length: 16 }, (_, index) => (
         <span
-          key={"table-header-" + props.name + "-" + index}
+          key={"table-header-" + props.memory.name + "-" + index}
           className={`${styles.hex_cell} ${styles.header}`}>
           X{index.toString(16).toUpperCase().substring(0, 3)}
         </span>
@@ -125,10 +126,10 @@ const Memory = (props: MemoryProps) => {
    * @returns the line from which to start rendering the memory table relatively to the memory table (0 = first 16 bytes of memory, ...)
    */
   const getStartLine = (): number => {
-    const memoryStartLine = Math.floor((props.pc - props.address) / 16);
-    const memoryLineCount = Math.ceil(props.data.length / 16);
+    const memoryStartLine = Math.floor((props.pc - props.memory.address) / 16);
+    const memoryLineCount = Math.ceil(props.memory.data.length / 16);
 
-    const pcLine = Math.floor((props.pc - props.address) / 16);
+    const pcLine = Math.floor((props.pc - props.memory.address) / 16);
 
     switch (props.viewPort) {
       case "start":
@@ -163,7 +164,11 @@ const Memory = (props: MemoryProps) => {
     const startLine = getStartLine();
     console.log("startLine", startLine);
     // for each line up to line 16 or the last line of memory
-    for (let line = startLine; line < startLine + 16 && line < props.data.length / 16; line++) {
+    for (
+      let line = startLine;
+      line < startLine + 16 && line < props.memory.data.length / 16;
+      line++
+    ) {
       // add memory table header before rendering the first memory line
       if (line === startLine) {
         result.push(...printMemoryTableHeader(line));
@@ -176,7 +181,7 @@ const Memory = (props: MemoryProps) => {
 
   return (
     <div>
-      <h2 className={styles.memory_name}>{props.name + " >"}</h2>
+      <h2 className={styles.memory_name}>{props.memory.name + " >"}</h2>
       <div className={styles.memory_table}>{printMemory()}</div>
     </div>
   );
