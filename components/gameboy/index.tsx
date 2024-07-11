@@ -8,6 +8,7 @@ import styles from "./index.module.css";
 import InstructionViewer from "../widgets/instruction-viewer";
 import UpdatesViewer from "../widgets/updates-viewer";
 import { NewLine } from "../command-line/helper";
+import MemorySelector from "../memory-selector";
 
 export type CPUState = {
   PC: Uint16;
@@ -336,17 +337,13 @@ const Gameboy = () => {
         {/* Memory Container 1 */}
         <div className={styles.memory_container}>
           {/* boot rom */}
-          {/* boot rom */}
           <div>
             {memory.length > 0 && (
-              <Memory
-                name={memory[0].name}
-                key={memory[0].name}
-                address={memory[0].address}
-                data={memory[0].data}
+              <MemorySelector
+                memories={memory}
                 pc={currCPUState.PC.get()}
                 bytes={instruction.Bytes}
-                viewPort="end"
+                viewPort="pc"
               />
             )}
           </div>
@@ -383,10 +380,36 @@ const Gameboy = () => {
         <div>
           {memory.length > 0 && (
             <Memory
-              name={memory[4].name}
-              key={memory[4].name}
-              address={memory[4].address}
-              data={memory[4].data}
+              name={memory[6].name}
+              key={memory[6].name}
+              address={memory[6].address}
+              data={memory[6].data}
+              pc={currCPUState.PC.get()}
+              bytes={instruction.Bytes}
+              viewPort="end"
+            />
+          )}
+        </div>
+        <div>
+          {memory.length > 0 && (
+            <Memory
+              name={memory[1].name}
+              key={memory[1].name}
+              address={memory[1].address}
+              data={memory[1].data}
+              pc={currCPUState.PC.get()}
+              bytes={instruction.Bytes}
+              viewPort="end"
+            />
+          )}
+        </div>
+        <div>
+          {memory.length > 0 && (
+            <Memory
+              name={memory[2].name}
+              key={memory[2].name}
+              address={memory[2].address}
+              data={memory[2].data}
               pc={currCPUState.PC.get()}
               bytes={instruction.Bytes}
               viewPort="end"

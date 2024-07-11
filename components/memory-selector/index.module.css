@@ -1,0 +1,43 @@
+.memory_table {
+  font-size: 1.1em;
+  font-weight: 400;
+  color: var(--lightblue);
+}
+
+.hex_cell {
+  /*Center the text in the cell*/
+  padding-left: 5px;
+  padding-right: 5px;
+  text-align: center;
+}
+
+.hex_cell_highlight {
+  padding-left: 5px;
+  padding-right: 5px;
+  text-align: center;
+  color: var(--yellow);
+}
+
+.address {
+  padding-left: 5px;
+  padding-right: 5px;
+  text-align: center;
+  color: var(--yellow);
+}
+
+.pc {
+  color: var(--black);
+  background-color: var(--yellow);
+}
+.operand {
+  color: var(--white);
+  background-color: var(--blue);
+}
+
+.header {
+  color: var(--yellow);
+}
+
+.memory_name {
+  color: var(--pink);
+}
