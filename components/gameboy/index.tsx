@@ -402,7 +402,10 @@ const Gameboy = () => {
           <FlagRegistersViewer cpuState={currCPUState} />
         </div>
         <div className={styles.instruction_viewer}>
-          <InstructionViewer instruction={instruction} />
+          <InstructionViewer
+            instruction={instruction}
+            operandValue={currCPUState.operandValue.toHex()}
+          />
         </div>
         <NewLine />
         <NewLine />

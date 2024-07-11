@@ -7,6 +7,7 @@ import { Instruction, Operand } from "../../gameboy";
 
 type InstructionProps = {
   instruction: Instruction;
+  operandValue: string;
 };
 const InstructionViewer = (props: InstructionProps) => {
   const formatOperand = (operand: Operand) => {
@@ -73,6 +74,8 @@ const InstructionViewer = (props: InstructionProps) => {
           " " +
           props.instruction.Operands.map((op, _) => formatOperand(op)).join(", ")}
       </Label>
+      {/* Operand Value */}
+      {props.instruction.Bytes > 1 && <Label>{"(" + props.operandValue + ")"}</Label>}
       <NewLine />
       <NewLine />
       {/* Description */}
