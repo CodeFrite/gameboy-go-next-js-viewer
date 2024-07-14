@@ -269,18 +269,19 @@ const Gameboy = () => {
    */
   useEffect(() => {
     const handleKeyDown = (ev: KeyboardEvent): void => {
-      ev.preventDefault();
       switch (ev.code) {
         case "Space":
           if (keyReleased.current) {
             (() => {
               handleStep();
+              keyReleased.current = false;
             })();
-            keyReleased.current = false;
           }
+          ev.preventDefault();
           break;
         default:
           console.log("No action for keypress: ", ev.code);
+          return;
       }
     };
 
