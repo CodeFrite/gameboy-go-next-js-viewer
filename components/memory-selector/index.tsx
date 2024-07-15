@@ -6,6 +6,7 @@ export type MemorySelectorProps = {
   pc: number;
   bytes: number;
   viewPort?: "start" | "end" | "pc" | "prev-pc";
+  highlightOperand?: boolean;
 };
 
 const MemorySelector = (props: MemorySelectorProps) => {
@@ -32,6 +33,7 @@ const MemorySelector = (props: MemorySelectorProps) => {
       pc={props.pc}
       bytes={props.bytes}
       viewPort={props.viewPort}
+      highlightOperand={props.highlightOperand}
     />
   );
 };
