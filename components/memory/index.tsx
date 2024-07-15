@@ -13,45 +13,21 @@ export type MemoryProps = {
   pc: number;
   bytes: number;
   viewPort?: "start" | "end" | "pc" | "prev-pc";
+  highlightOperand?: boolean;
 };
 
 const Memory = (props: MemoryProps) => {
   /**
    *
+   * @param value the memory cell value to be printed
    * @param index relative to the memory table (0 = first byte of memory, ...)
+   * @param style the style to apply to the memory cell (undefined for default style, style.pc for program counter, styles.operand for operand)
    * @returns
    */
-  const printMemoryCell = (value: string, index: number): JSX.Element => {
+  const printMemoryCell = (value: string, index: number, style?: string): JSX.Element => {
+    const className = style ? styles.hex_cell + " " + style : styles.hex_cell;
     return (
-      <span key={"hex-cell-" + index + "-" + value} className={styles.hex_cell}>
-        {value.substring(2)}
-      </span>
-    );
-  };
-
-  /**
-   *
-   * @param index relative to the memory table (0 = first byte of memory, ...)
-   * @returns
-   */
-  const printPC = (value: string, index: number): JSX.Element => {
-    return (
-      <span key={"pc-cell-" + index + "-" + value} className={styles.hex_cell + " " + styles.pc}>
-        {value.substring(2)}
-      </span>
-    );
-  };
-
-  /**
-   *
-   * @param index relative to the memory table (0 = first byte of memory, ...)
-   * @returns
-   */
-  const printOperand = (value: string, index: number): JSX.Element => {
-    return (
-      <span
-        key={"operand-cell-" + index + "-" + value}
-        className={styles.hex_cell + " " + styles.operand}>
+      <span key={"hex-cell-" + index + "-" + value} className={className}>
         {value.substring(2)}
       </span>
     );
@@ -72,7 +48,7 @@ const Memory = (props: MemoryProps) => {
       <span
         key={"line-address-" + props.memory.name + "-" + line}
         className={styles.hex_cell + " " + gStyles.color_yellow}>
-        {address.toString(16).padStart(4, "0").substring(0, 3) + "X"}
+        {address.toString(16).padStart(4, "0").substring(0, 3).toUpperCase() + "X"}
       </span>
     );
     // print the 16 memory cells of the current line
@@ -80,13 +56,17 @@ const Memory = (props: MemoryProps) => {
       ...props.memory.data.slice(line * 16, (line + 1) * 16).map((value, memoryIndex) => {
         // highlight the program counter
         if (props.pc === address + memoryIndex) {
-          return printPC(value, address + memoryIndex);
+          return printMemoryCell(value, address + memoryIndex, styles.pc);
           // highlight the operands
         } else if (
           address + memoryIndex > props.pc &&
           address + memoryIndex < props.pc + props.bytes
         ) {
-          return printOperand(value, address + memoryIndex);
+          if (props.highlightOperand === undefined || props.highlightOperand === true) {
+            return printMemoryCell(value, address + memoryIndex, styles.operand);
+          } else {
+            return printMemoryCell(value, address + memoryIndex);
+          }
         }
         return printMemoryCell(value, address + memoryIndex);
       })
@@ -162,7 +142,6 @@ const Memory = (props: MemoryProps) => {
     let result: JSX.Element[] = [];
     // depending on the mode, the first line from which to render will be different
     const startLine = getStartLine();
-    console.log("startLine", startLine);
     // for each line up to line 16 or the last line of memory
     for (
       let line = startLine;
