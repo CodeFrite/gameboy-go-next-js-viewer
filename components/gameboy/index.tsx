@@ -117,7 +117,7 @@ const Gameboy = () => {
   const [instruction, setInstruction] = useState<Instruction>(defaultInstruction());
   const [memory, setMemory] = useState<MemoryWriter[]>([]);
   const keyReleased = useRef<boolean>(true); // avoid rebouncing key presses effect by ignoring further keydown events before this flag is reset on keyup
-
+  const lastIndirectOperandAddress = useRef<number>(0);
   /**
    * WebSocket connection to the gameboy-go server
    */
@@ -323,6 +323,62 @@ const Gameboy = () => {
     }
   };
 
+  /**
+   * Get the address of the first operand that has an indirect addressing mode
+   * If none, return the last address that was fetched by this function
+   */
+  const getOperandAddress = (): number => {
+    // check if the first operand is an indirect addressing mode
+    const operand0 = instruction.Operands[0];
+    const operand1 = instruction.Operands[1];
+    let address = -1;
+    if (instruction.Operands.length > 0 && !operand0.immediate) {
+      if (operand0.name === "HL") {
+        if (operand0.increment) {
+          address = currCPUState.HL.get() - 1;
+        } else if (operand0.decrement) {
+          address = currCPUState.HL.get() + 1;
+        } else {
+          address = currCPUState.HL.get();
+        }
+      } else if (operand0.name === "BC") {
+        address = currCPUState.BC.get();
+      } else if (operand0.name === "DE") {
+        address = currCPUState.DE.get();
+      } else if (operand0.name === "C") {
+        address = 0xff00 + (currCPUState.BC.get() % 2 ** 8);
+      } else if (operand0.name === "a8") {
+        //address = 0xff00 + (currCPUState.operandValue.get() % 2 ** 8); // doesn't work if a8 in first operand because gameboy-go always returns the last operand value
+      }
+    } else if (instruction.Operands.length > 1 && !operand1.immediate) {
+      if (operand1.name === "HL") {
+        if (operand1.increment) {
+          address = currCPUState.HL.get() - 1;
+        } else if (operand1.decrement) {
+          address = currCPUState.HL.get() + 1;
+        } else {
+          address = currCPUState.HL.get();
+        }
+      } else if (operand1.name === "BC") {
+        address = currCPUState.BC.get();
+      } else if (operand1.name === "DE") {
+        address = currCPUState.DE.get();
+      } else if (operand1.name === "C") {
+        address = 0xff00 + (currCPUState.BC.get() % 2 ** 8);
+      } else if (operand1.name === "a8") {
+        //address = 0xff00 + (currCPUState.operandValue.get() % 2 ** 8); // doesn't work if a8 in first operand because gameboy-go always returns the last operand value
+      }
+    }
+    console.log("address: ", address);
+    if (address === -1) {
+      console.log("lastIndirectOperandAddress: ", lastIndirectOperandAddress.current);
+      address = lastIndirectOperandAddress.current;
+    } else {
+      lastIndirectOperandAddress.current = address;
+    }
+    return address;
+  };
+
   return (
     /* App */
     <div className={styles.app_container}>
@@ -351,12 +407,12 @@ const Gameboy = () => {
 
           <div>
             {memory.length > 0 && (
-              <Memory
-                key={memory[5].name}
-                memory={memory[5]}
-                pc={currCPUState.PC.get()}
+              <MemorySelector
+                memories={memory}
+                pc={getOperandAddress()}
                 bytes={instruction.Bytes}
                 viewPort="pc"
+                highlightOperand={false}
               />
             )}
           </div>
@@ -383,7 +439,7 @@ const Gameboy = () => {
               memory={memory[4]}
               pc={currCPUState.PC.get()}
               bytes={instruction.Bytes}
-              viewPort="end"
+              viewPort="start"
             />
           )}
         </div>
