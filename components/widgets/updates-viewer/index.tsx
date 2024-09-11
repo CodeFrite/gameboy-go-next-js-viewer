@@ -1,13 +1,10 @@
-import { render } from "react-dom";
-import Field from "../../command-line/field";
-import { NewLine, Separator } from "../../command-line/helper";
+import { CpuState } from "../../types";
 import { Label } from "../../command-line/label";
-import { CPUState } from "../../gameboy";
 import styles from "./index.module.css";
 
 type UpdateProps = {
-  prevCpuState: CPUState;
-  currCpuState: CPUState;
+  prevCpuState: CpuState;
+  currCpuState: CpuState;
 };
 
 const UpdatesViewer = (props: UpdateProps) => {
@@ -37,11 +34,11 @@ const UpdatesViewer = (props: UpdateProps) => {
         {props.prevCpuState.IR.get() !== props.currCpuState.IR.get() &&
           renderUpdate("IR", props.prevCpuState.IR.toHex(), props.currCpuState.IR.toHex())}
         {/* OP */}
-        {props.prevCpuState.operandValue.get() !== props.currCpuState.operandValue.get() &&
+        {props.prevCpuState.OPERAND_VALUE.get() !== props.currCpuState.OPERAND_VALUE.get() &&
           renderUpdate(
             "OP",
-            props.prevCpuState.operandValue.toHex(),
-            props.currCpuState.operandValue.toHex()
+            props.prevCpuState.OPERAND_VALUE.toHex(),
+            props.currCpuState.OPERAND_VALUE.toHex()
           )}
         {/* AF */}
         {props.prevCpuState.A.get() !== props.currCpuState.A.get() &&

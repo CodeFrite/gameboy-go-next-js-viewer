@@ -1,9 +1,9 @@
 import Entry from "../command-line/entry";
 import Flag from "../command-line/flag";
-import { CPUState } from "../gameboy";
+import { CpuState } from "../types";
 
 type FlagRegistersViewerProps = {
-  cpuState: CPUState;
+  cpuState: CpuState;
 };
 
 const FlagRegistersViewer = (props: FlagRegistersViewerProps) => {

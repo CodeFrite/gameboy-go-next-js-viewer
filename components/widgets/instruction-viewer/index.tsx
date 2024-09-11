@@ -1,14 +1,14 @@
+import { Instruction, Operand } from "../../types";
 import { useRef } from "react";
-import Field from "../../command-line/field";
-import { NewLine, Separator } from "../../command-line/helper";
+import { NewLine } from "../../command-line/helper";
 import { Label } from "../../command-line/label";
 import { BrandColor } from "../../command-line/types";
-import { Instruction, Operand } from "../../gameboy";
 
 type InstructionProps = {
   instruction: Instruction;
   operandValue: string;
 };
+
 const InstructionViewer = (props: InstructionProps) => {
   const formatOperand = (operand: Operand) => {
     const formatIncrement = (str: string) => str + "+";

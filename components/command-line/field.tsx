@@ -1,4 +1,4 @@
-import { Uint16, Uint8 } from "../types";
+import { uint16, uint8 } from "../types";
 import { Label } from "./label";
 import { BrandColor } from "./types";
 import ValueWatcher from "./value-watcher";
@@ -8,7 +8,7 @@ type FieldProps = {
   label: string;
   labelColor?: BrandColor;
   labelBgColor?: BrandColor;
-  value: Uint8 | Uint16 | boolean | string | number | null | undefined;
+  value: uint8 | uint16 | boolean | string | number | null | undefined;
 };
 export const Field = (props: FieldProps) => {
   return (

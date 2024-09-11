@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Uint16, Uint8 } from "../types";
+import { uint16, uint8 } from "../types";
 import styles from "./index.module.css";
 
 // Value Watcher: Display the value of a register or memory address and change its color based on the changes
 export type ValueWatcherProps = {
   id: string;
-  value: Uint8 | Uint16 | boolean | string | number | null | undefined;
+  value: uint8 | uint16 | boolean | string | number | null | undefined;
 };
 
 const ValueWatcher = (props: ValueWatcherProps) => {

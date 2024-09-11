@@ -1,48 +1,57 @@
-class Bit {
-  private value: boolean;
+const padStart = (str: string, length: number, pad: string) => {
+  const len = str.length;
+  if (len >= length) return str;
+  else return pad.repeat(length - len) + str;
+};
 
-  constructor(value: boolean) {
+export class uint8 {
+  value: number;
+  constructor(value: number) {
     this.value = value;
   }
-
-  get(): boolean {
+  get() {
     return this.value;
   }
-
-  set(value: boolean) {
-    this.value = value;
+  set(value: number) {
+    if (this.valid(value)) this.value = value;
+    else throw new Error(`Invalid uint8 value: ${value}`);
   }
-
+  valid(value: number) {
+    return this.value >= 0 && this.value < 2 ** 8;
+  }
   toHex(): string {
-    return this.value ? "1" : "0";
+    return padStart(this.value.toString(16).toUpperCase(), 2, "0");
   }
 
   toBit(): string {
-    return this.value ? "1" : "0";
+    return padStart(this.value.toString(2).toUpperCase(), 8, "0");
+  }
+  toStr(): string {
+    return this.value.toString();
   }
 }
 
-class Uint8 {
-  private value: number;
-
+export class uint16 {
+  value: number;
   constructor(value: number) {
-    this.value = value & 0xff; // Ensure the value is within 0-255
+    this.value = value;
   }
-
-  get(): number {
+  get() {
     return this.value;
   }
-
   set(value: number) {
-    this.value = value & 0xff; // Ensure the value is within 0-255
+    if (this.valid(value)) this.value = value;
+    else throw new Error(`Invalid uint16 value: ${value}`);
   }
-
+  valid(value: number) {
+    return this.value >= 0 && this.value < 2 ** 16;
+  }
   toHex(): string {
-    return this.value.toString(16).toUpperCase().padStart(2, "0");
+    return padStart(this.value.toString(16).toUpperCase(), 4, "0");
   }
 
   toBit(): string {
-    return this.value.toString(2).toUpperCase().padStart(8, "0");
+    return padStart(this.value.toString(2).toUpperCase(), 16, "0");
   }
 
   toStr(): string {
@@ -50,32 +59,113 @@ class Uint8 {
   }
 }
 
-class Uint16 {
-  private value: number;
+export type MemoryWrite = {
+  name: string;
+  address: number;
+  data: uint8[];
+};
 
-  constructor(value: number) {
-    this.value = value & 0xffff; // Ensure the value is within 0-65535
-  }
+export type Instruction = {
+  Mnemonic: string; // instruction mnemonic
+  Bytes: number; // number of bytes the instruction takes
+  Cycles: number[]; // number of cycles the instruction takes to execute. The first element is the number of cycles the instruction takes when the condition is met, the second element is the number of cycles the instruction takes when the condition is not met (see RETZ for example)
+  Operands: Operand[]; // instruction operands used as function arguments
+  Immediate: boolean; // is the operand an immediate value or should it be fetched from memory
+  Flags: Flags; // cpu flags affected by the instruction
+};
 
-  get(): number {
-    return this.value;
-  }
+export type Operand = {
+  name: string; // operand name: register, n8/n16 (immediate unsigned value), e8 (immediate signed value), a8/a16 (memory location)
+  bytes: number; // number of bytes the operand takes (optional)
+  immediate: boolean; // is the operand an immediate value or should it be fetched from memory
+  increment: boolean; // should the program counter be incremented after fetching the operand
+  decrement: boolean; // should the program counter be decreased after fetching the operand
+};
 
-  set(value: number) {
-    this.value = value & 0xffff; // Ensure the value is within 0-65535
-  }
+export type Flags = {
+  Z: string; // Zero flag: set if the result is zero (all bits are 0)
+  N: string; // Subtract flag: set if the instruction is a subtraction
+  H: string; // Half carry flag: set if there was a carry from bit 3 (result is 0x0F)
+  C: string; // Carry flag: set if there was a carry from bit 7 (result is 0xFF)
+};
 
-  toHex(): string {
-    return this.value.toString(16).toUpperCase().padStart(4, "0");
-  }
+export type CpuState = {
+  // Special registers
+  PC: uint16; // Program Counter
+  SP: uint16; // Stack Pointer
+  A: uint8; // Accumulator
+  F: uint8; // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
+  Z: boolean; // Zero flag
+  N: boolean; // Subtraction flag
+  H: boolean; // Half Carry flag
+  C: boolean; // Carry flag
 
-  toBit(): string {
-    return this.value.toString(2).toUpperCase().padStart(16, "0");
-  }
+  // 16-bits general purpose registers
+  BC: uint16;
+  DE: uint16;
+  HL: uint16;
 
-  toStr(): string {
-    return this.value.toString();
-  }
+  // Instruction
+  PREFIXED: boolean; // Is the current instruction prefixed with 0xCB
+  IR: uint8; // Instruction Register
+  OPERAND_VALUE: uint16; // Current operand fetched from memory (this register doesn't physically exist in the CPU)
+
+  // Interrupts
+  IE: uint8; // Interrupt Enable
+  IME: boolean; // interrupt master enable
+  HALTED: boolean; // is the CPU halted
+};
+
+export type GameboyState = {
+  PREV_CPU_STATE: CpuState;
+  CURR_CPU_STATE: CpuState;
+  INSTR: Instruction;
+  MEMORY_WRITES: MemoryWrite[];
+};
+
+export enum MessageType {
+  // client -> server
+  ConnectionMessageType = 0, // initial client http connection even before upgrading to websocket
+  CommandMessageType = 10, // sends a command to the server (message.data: 'step', 'reset')
+  // server -> client
+  InitialMemoryMapsMessageType = 50, // notifies the client of the initial memory maps (message.data: MemoryWrite)
+  GameboyStateMessageType = 70, // notifies the client of the current gameboy state (message.data: GameboyState)
+  ErrorMessageType = 90, // notifies the client of an error (message.data: string)
 }
 
-export { Uint8, Uint16 };
+export type Message = {
+  type: MessageType;
+  data: unknown;
+};
+
+export type ConnectionMessage = Message & {
+  type: MessageType.ConnectionMessageType;
+  data: undefined;
+};
+
+export type CommandMessage = Message & {
+  type: MessageType.CommandMessageType;
+  data: "step" | "run";
+};
+
+export type InitialMemoryMapsMessage = Message & {
+  type: MessageType.InitialMemoryMapsMessageType;
+  data: MemoryWrite[];
+};
+
+export type GameboyStateMessage = Message & {
+  type: MessageType.GameboyStateMessageType;
+  data: GameboyState;
+};
+
+export type ErrorMessageType = Message & {
+  type: MessageType.ErrorMessageType;
+  data: string;
+};
+
+export type ServerMessageTypes =
+  | ConnectionMessage
+  | CommandMessage
+  | InitialMemoryMapsMessage
+  | GameboyStateMessage
+  | ErrorMessageType;

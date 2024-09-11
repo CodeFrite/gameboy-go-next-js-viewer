@@ -1,15 +1,9 @@
-import { useRef } from "react";
+import { MemoryWrite, uint8 } from "./../types";
 import gStyles from "../../styles/globals.module.css";
 import styles from "./index.module.css";
 
-export type MemoryWriter = {
-  name: string;
-  address: number;
-  data: string[];
-};
-
 export type MemoryProps = {
-  memory: MemoryWriter;
+  memory: MemoryWrite;
   pc: number;
   bytes: number;
   viewPort?: "start" | "end" | "pc" | "prev-pc";
@@ -24,11 +18,17 @@ const Memory = (props: MemoryProps) => {
    * @param style the style to apply to the memory cell (undefined for default style, style.pc for program counter, styles.operand for operand)
    * @returns
    */
-  const printMemoryCell = (value: string, index: number, style?: string): JSX.Element => {
+  const printMemoryCell = (value: uint8, index: number, style?: string): JSX.Element => {
     const className = style ? styles.hex_cell + " " + style : styles.hex_cell;
     return (
-      <span key={"hex-cell-" + index + "-" + value} className={className}>
-        {value.substring(2)}
+      <span
+        key={"hex-cell-" + index + "-" + value}
+        className={className}
+        onDoubleClick={(ev) => {
+          ev.preventDefault();
+          console.log("cell(0x" + index.toString(16) + ")=" + value);
+        }}>
+        {value.toHex()}
       </span>
     );
   };
