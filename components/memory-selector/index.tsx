@@ -1,8 +1,9 @@
 import { useRef } from "react";
-import Memory, { MemoryWriter } from "../memory";
+import Memory from "../memory";
+import { MemoryWrite } from "../types";
 
 export type MemorySelectorProps = {
-  memories: MemoryWriter[];
+  memories: MemoryWrite[];
   pc: number;
   bytes: number;
   viewPort?: "start" | "end" | "pc" | "prev-pc";
