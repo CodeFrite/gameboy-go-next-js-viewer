@@ -1,18 +1,38 @@
-import { MemoryWrite, uint8 } from "./../types";
+import { MouseEvent } from "react";
 import gStyles from "../../styles/globals.module.css";
+import { MemoryWrite, uint16, uint8 } from "./../types";
 import styles from "./index.module.css";
+import { AddBreakPointEvent } from "../events";
 
 export type MemoryProps = {
   memory: MemoryWrite;
   pc: number;
   bytes: number;
+  breakPoints?: uint16[];
   viewPort?: "start" | "end" | "pc" | "prev-pc";
   highlightOperand?: boolean;
 };
 
 const Memory = (props: MemoryProps) => {
   /**
-   *
+   * send a custom AddBreakPoint event to the gameboy component which keeps track of the breakpoints being saved
+   * @ev the mouse double click event
+   * @index the relative address of the memory cell being double clicked
+   */
+  const handleToggleBreakpoint = (ev: MouseEvent<HTMLSpanElement>, index: number) => {
+    ev.preventDefault();
+    const customEvent = AddBreakPointEvent({
+      memoryName: props.memory.name,
+      address: new uint16(index),
+    });
+    const gameboy = document.getElementById("gameboy");
+    if (gameboy) {
+      gameboy.dispatchEvent(customEvent);
+    }
+  };
+
+  /**
+   * prints a formatted memory cell
    * @param value the memory cell value to be printed
    * @param index relative to the memory table (0 = first byte of memory, ...)
    * @param style the style to apply to the memory cell (undefined for default style, style.pc for program counter, styles.operand for operand)
@@ -24,10 +44,7 @@ const Memory = (props: MemoryProps) => {
       <span
         key={"hex-cell-" + index + "-" + value}
         className={className}
-        onDoubleClick={(ev) => {
-          ev.preventDefault();
-          console.log("cell(0x" + index.toString(16) + ")=" + value);
-        }}>
+        onDoubleClick={(ev) => handleToggleBreakpoint(ev, index)}>
         {value.toHex()}
       </span>
     );
@@ -54,21 +71,23 @@ const Memory = (props: MemoryProps) => {
     // print the 16 memory cells of the current line
     result.push(
       ...props.memory.data.slice(line * 16, (line + 1) * 16).map((value, memoryIndex) => {
+        const idx = address + memoryIndex;
         // highlight the program counter
-        if (props.pc === address + memoryIndex) {
-          return printMemoryCell(value, address + memoryIndex, styles.pc);
+        if (props.pc === idx) {
+          return printMemoryCell(value, idx, styles.pc);
           // highlight the operands
-        } else if (
-          address + memoryIndex > props.pc &&
-          address + memoryIndex < props.pc + props.bytes
-        ) {
+        } else if (idx > props.pc && idx < props.pc + props.bytes) {
           if (props.highlightOperand === undefined || props.highlightOperand === true) {
-            return printMemoryCell(value, address + memoryIndex, styles.operand);
+            return printMemoryCell(value, idx, styles.operand);
           } else {
-            return printMemoryCell(value, address + memoryIndex);
+            return printMemoryCell(value, idx);
           }
+          // highlight the breakpoints
+        } else if (props.breakPoints && props.breakPoints.find((bp) => bp.get() === idx)) {
+          return printMemoryCell(value, idx, styles.break_point);
         }
-        return printMemoryCell(value, address + memoryIndex);
+        // ... otherwise, print the default memory cell
+        else return printMemoryCell(value, idx);
       })
     );
     return result;

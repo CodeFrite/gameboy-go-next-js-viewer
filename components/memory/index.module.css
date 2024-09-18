@@ -2,6 +2,7 @@
   font-size: 1.1em;
   font-weight: 400;
   color: var(--lightblue);
+  user-select: none;
 }
 
 .hex_cell {
@@ -32,6 +33,10 @@
 .operand {
   color: var(--white);
   background-color: var(--blue);
+}
+.break_point {
+  color: var(--black);
+  background-color: var(--pink);
 }
 
 .header {

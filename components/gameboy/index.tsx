@@ -1,22 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 
-import {
-  CpuState,
-  GameboyState,
-  InitialMemoryMapsMessage,
-  Instruction,
-  MemoryWrite,
-  MessageType,
-  uint16,
-  uint8,
-} from "./../types";
+import useCallBackState from "../../hooks/useCallBackState";
 import { NewLine } from "../command-line/helper";
+import { DebuggerEvents, ToggleBreakPointEventDetail } from "../events";
 import Memory from "../memory";
 import MemorySelector from "../memory-selector";
 import CPUStateViewer from "../widgets/cpu-state-viewer";
 import FlagRegistersViewer from "../widgets/flag-registers-viewer";
 import InstructionViewer from "../widgets/instruction-viewer";
 import UpdatesViewer from "../widgets/updates-viewer";
+import { CpuState, Instruction, MemoryWrite, MessageType, uint16, uint8 } from "./../types";
 import styles from "./index.module.css";
 
 const defaultCPUState = (): CpuState => ({
@@ -48,6 +41,11 @@ const defaultInstruction = (): Instruction => ({
   Flags: { Z: "0", N: "0", H: "0", C: "0" },
 });
 
+export type MemoryBreakPoint = {
+  memoryName: string;
+  addresses: uint16[];
+};
+
 const Gameboy = () => {
   const ws = useRef<WebSocket | null>(null);
   const [prevCPUState, setPrevCPUState] = useState<CpuState>(defaultCPUState());
@@ -56,6 +54,95 @@ const Gameboy = () => {
   const [memory, setMemory] = useState<MemoryWrite[]>([]);
   const keyReleased = useRef<boolean>(true); // avoid rebouncing key presses effect by ignoring further keydown events before this flag is reset on keyup
   const lastIndirectOperandAddress = useRef<number>(0);
+
+  /**
+   * link a memory name to its breakpoints
+   */
+  const [breakPoints, setBreakPoints, breakPointsRef] = useCallBackState<MemoryBreakPoint[]>([]);
+
+  /**
+   * Intercepts Memory events: AddBreakPoint & DeleteBreakPoints
+   */
+  const handleToggleBreakPointEvent = (event: CustomEvent<ToggleBreakPointEventDetail>) => {
+    console.log("gameboy> received custom event:", event);
+    // toggle the breakpoint
+    const memoryName = event.detail.memoryName;
+
+    // check if there is an entry for that memory
+    const memoryBreakPointIdx = breakPointsRef.current.findIndex(
+      (mbp) => mbp.memoryName === event.detail.memoryName
+    );
+    if (memoryBreakPointIdx !== -1) {
+      console.log("entries for", event.detail.memoryName, "found");
+      // look for the breakpoint
+      const breakPointIdx = breakPointsRef.current[memoryBreakPointIdx].addresses.findIndex(
+        (value) => value.get() === event.detail.address.get()
+      );
+      // if it has been found, remove it from the breakpoints array and notify the server
+      if (breakPointIdx !== -1) {
+        setBreakPoints(
+          breakPointsRef.current.map((mbp: MemoryBreakPoint) =>
+            mbp.memoryName === event.detail.memoryName
+              ? {
+                  memoryName: mbp.memoryName,
+                  addresses: mbp.addresses.filter(
+                    (addr) => addr.get() !== event.detail.address.get()
+                  ),
+                }
+              : mbp
+          )
+        );
+        // construct the request payload, stringify it and send it to the server
+        const payload = {
+          type: 21,
+          data: event.detail.address.get(),
+        };
+        ws.current!.send(JSON.stringify(payload));
+        console.log("sending remove breakpoint request:", JSON.stringify(payload));
+
+        // ... if the breakpoint hasn't been found, add it to the breakpoints array and notify the server
+      } else {
+        setBreakPoints(
+          breakPointsRef.current.map((mbp: MemoryBreakPoint) =>
+            mbp.memoryName === event.detail.memoryName
+              ? {
+                  memoryName: mbp.memoryName,
+                  addresses: [...mbp.addresses, event.detail.address],
+                }
+              : mbp
+          )
+        );
+        // construct the request payload, stringify it and send it to the server
+        const payload = {
+          type: 20,
+          data: event.detail.address.get(),
+        };
+        ws.current!.send(JSON.stringify(payload));
+        console.log("sending add breakpoint request:", JSON.stringify(payload));
+      }
+    } else {
+      setBreakPoints([
+        ...breakPointsRef.current,
+        { memoryName: event.detail.memoryName, addresses: [event.detail.address] },
+      ]);
+    }
+  };
+  useEffect(() => {
+    const gameboy = document.getElementById("gameboy");
+    if (gameboy)
+      gameboy.addEventListener(
+        DebuggerEvents.ToggleBreakPoint,
+        handleToggleBreakPointEvent as EventListener
+      );
+    return () => {
+      if (gameboy) {
+        gameboy.removeEventListener(
+          DebuggerEvents.ToggleBreakPoint,
+          handleToggleBreakPointEvent as EventListener
+        );
+      }
+    };
+  }, []);
 
   /**
    * WebSocket connection to the gameboy-go server
@@ -261,9 +348,14 @@ const Gameboy = () => {
     const handleKeyDown = (ev: KeyboardEvent): void => {
       switch (ev.code) {
         case "Space":
-          if (keyReleased.current) {
+          if (!ev.ctrlKey && keyReleased.current) {
             (() => {
               handleStep();
+              keyReleased.current = false;
+            })();
+          } else if (ev.ctrlKey && keyReleased.current) {
+            (() => {
+              handleRun();
               keyReleased.current = false;
             })();
           }
@@ -303,13 +395,21 @@ const Gameboy = () => {
 
   const handleStep = () => {
     if (ws && ws.current) {
-      ws.current.send("step");
+      const payload = {
+        type: 10,
+        data: {},
+      };
+      ws.current.send(JSON.stringify(payload));
     }
   };
 
   const handleRun = () => {
     if (ws && ws.current) {
-      ws.current.send("run");
+      const payload = {
+        type: 11,
+        data: {},
+      };
+      ws.current.send(JSON.stringify(payload));
     }
   };
 
@@ -369,7 +469,7 @@ const Gameboy = () => {
 
   return (
     /* App */
-    <div className={styles.app_container}>
+    <div id="gameboy" className={styles.app_container}>
       {/* Left Column */}
       <div className={styles.column}>
         <br />
@@ -386,6 +486,7 @@ const Gameboy = () => {
             {memory.length > 0 && (
               <MemorySelector
                 memories={memory}
+                breakPoints={breakPoints}
                 pc={currCPUState.PC.get()}
                 bytes={instruction.Bytes}
                 viewPort="pc"
@@ -397,6 +498,7 @@ const Gameboy = () => {
             {memory.length > 0 && (
               <MemorySelector
                 memories={memory}
+                breakPoints={breakPoints}
                 pc={getOperandAddress()}
                 bytes={instruction.Bytes}
                 viewPort="pc"
@@ -425,6 +527,9 @@ const Gameboy = () => {
             <Memory
               key={memory[4].name}
               memory={memory[4]}
+              breakPoints={
+                breakPoints.find((mbp) => mbp.memoryName === memory[4].name)?.addresses ?? []
+              }
               pc={currCPUState.PC.get()}
               bytes={instruction.Bytes}
               viewPort="start"
@@ -436,6 +541,9 @@ const Gameboy = () => {
             <Memory
               key={memory[6].name}
               memory={memory[6]}
+              breakPoints={
+                breakPoints.find((mbp) => mbp.memoryName === memory[6].name)?.addresses ?? []
+              }
               pc={currCPUState.PC.get()}
               bytes={instruction.Bytes}
               viewPort="end"
@@ -447,6 +555,9 @@ const Gameboy = () => {
             <Memory
               key={memory[1].name}
               memory={memory[1]}
+              breakPoints={
+                breakPoints.find((mbp) => mbp.memoryName === memory[1].name)?.addresses ?? []
+              }
               pc={currCPUState.PC.get()}
               bytes={instruction.Bytes}
               viewPort="end"
