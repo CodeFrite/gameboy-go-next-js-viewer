@@ -34,7 +34,7 @@ const InstructionViewer = (props: InstructionProps) => {
     let result = [];
 
     let index = 0;
-    for (const [name, value] of Object.entries(props.instruction.Flags)) {
+    for (const [name, value] of Object.entries(props.instruction.flags)) {
       let color: BrandColor = "gray";
 
       // green if set (1)
@@ -70,12 +70,12 @@ const InstructionViewer = (props: InstructionProps) => {
       </Label>
       {/* Instruction Mnemonic and Operands (ASM) */}
       <Label>
-        {props.instruction.Mnemonic +
+        {props.instruction.mnemonic +
           " " +
-          props.instruction.Operands.map((op, _) => formatOperand(op)).join(", ")}
+          props.instruction.operands.map((op, _) => formatOperand(op)).join(", ")}
       </Label>
       {/* Operand Value */}
-      {props.instruction.Bytes > 1 && <Label>{"(" + props.operandValue + ")"}</Label>}
+      {props.instruction.bytes > 1 && <Label>{"(" + props.operandValue + ")"}</Label>}
       <NewLine />
       <NewLine />
       {/* Description */}
@@ -84,10 +84,10 @@ const InstructionViewer = (props: InstructionProps) => {
       <NewLine />
       {/* Bytes and Cycles */}
       <Label color="green">* BYTES</Label>
-      <Label>{"" + props.instruction.Bytes}</Label>
+      <Label>{"" + props.instruction.bytes}</Label>
       <Label color="gray"> / </Label>
       <Label color="green"> CYCLES</Label>
-      <Label>{"" + props.instruction.Cycles}</Label>
+      <Label>{"" + props.instruction.cycles}</Label>
       <NewLine />
       <NewLine />
       {/* Flags */}

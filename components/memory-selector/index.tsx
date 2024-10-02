@@ -13,8 +13,6 @@ export type MemorySelectorProps = {
 };
 
 const MemorySelector = (props: MemorySelectorProps) => {
-  const memoryIndex = useRef(0);
-
   const findMemoryIndexAtPC = (): number => {
     return props.memories.findIndex((value, index) => {
       if (props.pc >= value.address && props.pc < value.address + value.data.length) {
@@ -23,20 +21,15 @@ const MemorySelector = (props: MemorySelectorProps) => {
     });
   };
 
-  const saveMemoryIndexAtPC = () => {
-    memoryIndex.current = findMemoryIndexAtPC();
-  };
-
-  saveMemoryIndexAtPC();
+  const pcIndex = findMemoryIndexAtPC();
 
   return (
     <Memory
-      key={"memory-selector-" + props.memories[memoryIndex.current].name}
-      memory={props.memories[memoryIndex.current]}
+      key={"memory-selector-" + props.memories[pcIndex].name}
+      memory={props.memories[pcIndex]}
       breakPoints={
-        props.breakPoints?.find(
-          (mbp) => mbp.memoryName === props.memories[memoryIndex.current].name
-        )?.addresses ?? []
+        props.breakPoints?.find((mbp) => mbp.memoryName === props.memories[pcIndex].name)
+          ?.addresses ?? []
       }
       pc={props.pc}
       bytes={props.bytes}

@@ -13,6 +13,8 @@ import { CpuState, Instruction, MemoryWrite, MessageType, uint16, uint8 } from "
 import styles from "./index.module.css";
 
 const defaultCPUState = (): CpuState => ({
+  // special registers
+  CPU_CYCLES: 0,
   PC: new uint16(0),
   SP: new uint16(0),
   A: new uint8(0),
@@ -21,24 +23,28 @@ const defaultCPUState = (): CpuState => ({
   N: false,
   H: false,
   C: false,
+  // 16-bits general purpose registers
   BC: new uint16(0),
   DE: new uint16(0),
   HL: new uint16(0),
-  IR: new uint8(0),
+  // instruction
+  INSTRUCTION: defaultInstruction(),
   PREFIXED: false,
+  IR: new uint8(0),
   OPERAND_VALUE: new uint16(0),
+  // interrupts
   IE: new uint8(0),
   IME: false,
   HALTED: false,
 });
 
 const defaultInstruction = (): Instruction => ({
-  Mnemonic: "",
-  Bytes: 0,
-  Cycles: [0],
-  Operands: [],
-  Immediate: false,
-  Flags: { Z: "0", N: "0", H: "0", C: "0" },
+  mnemonic: "",
+  bytes: 0,
+  cycles: [0],
+  operands: [],
+  immediate: false,
+  flags: { Z: "0", N: "0", H: "0", C: "0" },
 });
 
 export type MemoryBreakPoint = {
@@ -50,15 +56,12 @@ const Gameboy = () => {
   const ws = useRef<WebSocket | null>(null);
   const [prevCPUState, setPrevCPUState] = useState<CpuState>(defaultCPUState());
   const [currCPUState, setCurrCPUState] = useState<CpuState>(defaultCPUState());
-  const [instruction, setInstruction] = useState<Instruction>(defaultInstruction());
+
   const [memory, setMemory] = useState<MemoryWrite[]>([]);
+  const [breakPoints, setBreakPoints, breakPointsRef] = useCallBackState<MemoryBreakPoint[]>([]);
+
   const keyReleased = useRef<boolean>(true); // avoid rebouncing key presses effect by ignoring further keydown events before this flag is reset on keyup
   const lastIndirectOperandAddress = useRef<number>(0);
-
-  /**
-   * link a memory name to its breakpoints
-   */
-  const [breakPoints, setBreakPoints, breakPointsRef] = useCallBackState<MemoryBreakPoint[]>([]);
 
   /**
    * Intercepts Memory events: AddBreakPoint & DeleteBreakPoints
@@ -147,6 +150,10 @@ const Gameboy = () => {
   /**
    * WebSocket connection to the gameboy-go server
    */
+  const shiftCPUState = (newState: CpuState) => {
+    setPrevCPUState(currCPUState);
+  };
+
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:8080/gameboy");
 
@@ -160,6 +167,7 @@ const Gameboy = () => {
       switch (message.type) {
         // Initialize memory maps on first connection
         case MessageType.InitialMemoryMapsMessageType:
+          console.log("Initial Memory Maps Channel> received initial memory maps: ", message.data);
           // memoryWrite.data is received as a string and needs to be converted to uint8 array
           if (message.data) {
             setMemory(
@@ -174,154 +182,76 @@ const Gameboy = () => {
           }
           break;
 
-        // Update the gameboystate on each step or run
-        case MessageType.GameboyStateMessageType:
-          setPrevCPUState({
-            PC:
-              message.data.prevState && message.data.prevState.PC
-                ? new uint16(message.data.prevState.PC)
-                : new uint16(0),
-            SP:
-              message.data.prevState && message.data.prevState.SP
-                ? new uint16(message.data.prevState.SP)
-                : new uint16(0),
-            A:
-              message.data.prevState && message.data.prevState.A
-                ? new uint8(message.data.prevState.A)
-                : new uint8(0),
-            F:
-              message.data.prevState && message.data.prevState.F
-                ? new uint8(message.data.prevState.F)
-                : new uint8(0),
-            Z: message.data.prevState && message.data.prevState.Z,
-            N: message.data.prevState && message.data.prevState.N,
-            H: message.data.prevState && message.data.prevState.H,
-            C: message.data.prevState && message.data.prevState.C,
-            BC:
-              message.data.prevState && message.data.prevState.BC
-                ? new uint16(message.data.prevState.BC)
-                : new uint16(0),
-            DE:
-              message.data.prevState && message.data.prevState.DE
-                ? new uint16(message.data.prevState.DE)
-                : new uint16(0),
-            HL:
-              message.data.prevState && message.data.prevState.HL
-                ? new uint16(message.data.prevState.HL)
-                : new uint16(0),
-            IR:
-              message.data.prevState && message.data.prevState.IR
-                ? new uint8(message.data.prevState.IR)
-                : new uint8(0),
-            PREFIXED: message.data.prevState && message.data.prevState.prefixed,
-            OPERAND_VALUE:
-              message.data.prevState && message.data.prevState.operandValue
-                ? new uint16(message.data.prevState.operandValue)
-                : new uint16(0),
-            IE:
-              message.data.prevState && message.data.prevState.IE
-                ? new uint8(message.data.prevState.IE)
-                : new uint8(0),
-            IME: message.data.prevState && message.data.prevState.IME,
-            HALTED: message.data.prevState && message.data.prevState.Halted,
-          });
-
-          setCurrCPUState({
-            PC:
-              message.data.currState && message.data.currState.PC
-                ? new uint16(message.data.currState.PC)
-                : new uint16(0),
-            SP:
-              message.data.currState && message.data.currState.SP
-                ? new uint16(message.data.currState.SP)
-                : new uint16(0),
-            A:
-              message.data.currState && message.data.currState.A
-                ? new uint8(message.data.currState.A)
-                : new uint8(0),
-            F:
-              message.data.currState && message.data.currState.F
-                ? new uint8(message.data.currState.F)
-                : new uint8(0),
-            Z: message.data.currState && message.data.currState.Z,
-            N: message.data.currState && message.data.currState.N,
-            H: message.data.currState && message.data.currState.H,
-            C: message.data.currState && message.data.currState.C,
-            BC:
-              message.data.currState && message.data.currState.BC
-                ? new uint16(message.data.currState.BC)
-                : new uint16(0),
-            DE:
-              message.data.currState && message.data.currState.DE
-                ? new uint16(message.data.currState.DE)
-                : new uint16(0),
-            HL:
-              message.data.currState && message.data.currState.HL
-                ? new uint16(message.data.currState.HL)
-                : new uint16(0),
-            IR:
-              message.data.currState && message.data.currState.IR
-                ? new uint8(message.data.currState.IR)
-                : new uint8(0),
-            PREFIXED: message.data.currState && message.data.currState.prefixed,
-            OPERAND_VALUE:
-              message.data.currState && message.data.currState.operandValue
-                ? new uint16(message.data.currState.operandValue)
-                : new uint16(0),
-            IE:
-              message.data.currState && message.data.currState.IE
-                ? new uint8(message.data.currState.IE)
-                : new uint8(0),
-            IME: message.data.currState && message.data.currState.IME,
-            HALTED: message.data.currState && message.data.currState.Halted,
-          });
-
-          // Update the instruction
-          if (message.data && message.data.instruction) {
-            console.log("Instruction: ", message.data.instruction);
-            setInstruction({
-              Mnemonic: message.data.instruction.mnemonic ? message.data.instruction.mnemonic : "?",
-              Bytes: message.data.instruction.bytes ? message.data.instruction.bytes : "? ",
-              Cycles: message.data.instruction.cycles ? message.data.instruction.cycles : "?",
-              Operands: message.data.instruction.operands ? message.data.instruction.operands : [],
-              Immediate: message.data.instruction.immediate,
-              Flags: message.data.instruction.flags ? { ...message.data.instruction.flags } : {},
-            } as Instruction);
-          }
-
           // Update the memory content if there are any memory writes
           if (message.data && message.data.memoryWrites && message.data.memoryWrites.length > 0) {
-            // helper function to update the memory with memory writes
-            const updateMemory = (
-              memory: MemoryWrite,
-              updates: MemoryWrite & { data: number[] }
-            ): uint8[] => {
-              const data: uint8[] = [];
-              let updateIdx = 0;
-              memory.data.map((value, idx) => {
-                if (idx >= updates.address && idx < updates.address + updates.data.length) {
-                  data.push(new uint8(updates.data[updateIdx]));
-                  updateIdx++;
-                } else data.push(value);
-              });
-              return data;
-            };
-
-            message.data.memoryWrites.map((memoryWrite: MemoryWrite & { data: number[] }) => {
-              setMemory((prev) =>
-                prev.map((mem) =>
-                  mem.name === memoryWrite.name
-                    ? {
-                        name: mem.name,
-                        address: mem.address,
-                        data: updateMemory(mem, memoryWrite),
-                      }
-                    : mem
-                )
-              );
-            });
           }
           break;
+
+        case MessageType.CPUStateMessageType:
+          console.log("CPU State Channel> received new state: ", message.data);
+          shiftCPUState(message.data);
+          setCurrCPUState({
+            // Special registers
+            CPU_CYCLES: message.data.CPU_CYCLES,
+            PC: new uint16(message.data.PC),
+            SP: new uint16(message.data.SP),
+            A: new uint8(message.data.A),
+            F: new uint8(message.data.F),
+            Z: message.data.Z,
+            N: message.data.N,
+            H: message.data.H,
+            C: message.data.C,
+            // 16-bits general purpose registers
+            BC: new uint16(message.data.BC),
+            DE: new uint16(message.data.DE),
+            HL: new uint16(message.data.HL),
+            // instruction
+            INSTRUCTION: message.data.INSTRUCTION,
+            PREFIXED: message.data.PREFIXED,
+            IR: new uint8(message.data.IR),
+            OPERAND_VALUE: new uint16(message.data.OPERAND_VALUE),
+            // interrupts
+            IE: new uint8(message.data.IE),
+            IME: message.data.IME,
+            HALTED: message.data.HALTED,
+          });
+          break;
+
+        case MessageType.PPUStateMessageType:
+          console.log("PPU State Channel> received new state: ", message.data);
+          break;
+
+        case MessageType.MemoryStateMessageType:
+          // helper function to update the memory with memory writes
+          console.log("Memory State Channel> received new state: ", message.data);
+          const updateMemory = (
+            memory: MemoryWrite,
+            updates: MemoryWrite & { data: number[] }
+          ): uint8[] => {
+            const data: uint8[] = [];
+            let updateIdx = 0;
+            memory.data.map((value, idx) => {
+              if (idx >= updates.address && idx < updates.address + updates.data.length) {
+                data.push(new uint8(updates.data[updateIdx]));
+                updateIdx++;
+              } else data.push(value);
+            });
+            return data;
+          };
+
+          message.data.map((memoryWrite: MemoryWrite & { data: number[] }) => {
+            setMemory((prev) =>
+              prev.map((mem) =>
+                mem.name === memoryWrite.name
+                  ? {
+                      name: mem.name,
+                      address: mem.address,
+                      data: updateMemory(mem, memoryWrite),
+                    }
+                  : mem
+              )
+            );
+          });
       }
     };
 
@@ -400,6 +330,7 @@ const Gameboy = () => {
         data: {},
       };
       ws.current.send(JSON.stringify(payload));
+      console.log("step request sent:", JSON.stringify(payload));
     }
   };
 
@@ -410,6 +341,7 @@ const Gameboy = () => {
         data: {},
       };
       ws.current.send(JSON.stringify(payload));
+      console.log("run request sent:", JSON.stringify(payload));
     }
   };
 
@@ -419,10 +351,10 @@ const Gameboy = () => {
    */
   const getOperandAddress = (): number => {
     // check if the first operand is an indirect addressing mode
-    const operand0 = instruction.Operands[0];
-    const operand1 = instruction.Operands[1];
+    const operand0 = currCPUState.INSTRUCTION.operands[0];
+    const operand1 = currCPUState.INSTRUCTION.operands[1];
     let address = -1;
-    if (instruction.Operands.length > 0 && !operand0.immediate) {
+    if (currCPUState.INSTRUCTION.operands.length > 0 && !operand0.immediate) {
       if (operand0.name === "HL") {
         if (operand0.increment) {
           address = currCPUState.HL.get() - 1;
@@ -440,7 +372,7 @@ const Gameboy = () => {
       } else if (operand0.name === "a8") {
         //address = 0xff00 + (currCPUState.operandValue.get() % 2 ** 8); // doesn't work if a8 in first operand because gameboy-go always returns the last operand value
       }
-    } else if (instruction.Operands.length > 1 && !operand1.immediate) {
+    } else if (currCPUState.INSTRUCTION.operands.length > 1 && !operand1.immediate) {
       if (operand1.name === "HL") {
         if (operand1.increment) {
           address = currCPUState.HL.get() - 1;
@@ -488,7 +420,7 @@ const Gameboy = () => {
                 memories={memory}
                 breakPoints={breakPoints}
                 pc={currCPUState.PC.get()}
-                bytes={instruction.Bytes}
+                bytes={currCPUState.INSTRUCTION.bytes}
                 viewPort="pc"
               />
             )}
@@ -500,7 +432,7 @@ const Gameboy = () => {
                 memories={memory}
                 breakPoints={breakPoints}
                 pc={getOperandAddress()}
-                bytes={instruction.Bytes}
+                bytes={currCPUState.INSTRUCTION.bytes}
                 viewPort="pc"
                 highlightOperand={false}
               />
@@ -517,7 +449,7 @@ const Gameboy = () => {
           <CPUStateViewer
             PREV_CPU_STATE={prevCPUState}
             CURR_CPU_STATE={currCPUState}
-            INSTR={instruction}
+            INSTR={currCPUState.INSTRUCTION}
             MEMORY_WRITES={memory}
           />
         </div>
@@ -531,7 +463,7 @@ const Gameboy = () => {
                 breakPoints.find((mbp) => mbp.memoryName === memory[4].name)?.addresses ?? []
               }
               pc={currCPUState.PC.get()}
-              bytes={instruction.Bytes}
+              bytes={currCPUState.INSTRUCTION.bytes}
               viewPort="start"
             />
           )}
@@ -545,7 +477,7 @@ const Gameboy = () => {
                 breakPoints.find((mbp) => mbp.memoryName === memory[6].name)?.addresses ?? []
               }
               pc={currCPUState.PC.get()}
-              bytes={instruction.Bytes}
+              bytes={currCPUState.INSTRUCTION.bytes}
               viewPort="end"
             />
           )}
@@ -559,7 +491,7 @@ const Gameboy = () => {
                 breakPoints.find((mbp) => mbp.memoryName === memory[1].name)?.addresses ?? []
               }
               pc={currCPUState.PC.get()}
-              bytes={instruction.Bytes}
+              bytes={currCPUState.INSTRUCTION.bytes}
               viewPort="end"
             />
           )}
@@ -572,9 +504,10 @@ const Gameboy = () => {
         <div className={styles.cpu_flag_registers_viewer}>
           <FlagRegistersViewer cpuState={currCPUState} />
         </div>
+
         <div className={styles.instruction_viewer}>
           <InstructionViewer
-            instruction={instruction}
+            instruction={currCPUState.INSTRUCTION}
             operandValue={currCPUState.OPERAND_VALUE.toHex()}
           />
         </div>

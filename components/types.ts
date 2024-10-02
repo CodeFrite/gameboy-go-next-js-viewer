@@ -66,12 +66,12 @@ export type MemoryWrite = {
 };
 
 export type Instruction = {
-  Mnemonic: string; // instruction mnemonic
-  Bytes: number; // number of bytes the instruction takes
-  Cycles: number[]; // number of cycles the instruction takes to execute. The first element is the number of cycles the instruction takes when the condition is met, the second element is the number of cycles the instruction takes when the condition is not met (see RETZ for example)
-  Operands: Operand[]; // instruction operands used as function arguments
-  Immediate: boolean; // is the operand an immediate value or should it be fetched from memory
-  Flags: Flags; // cpu flags affected by the instruction
+  mnemonic: string; // instruction mnemonic
+  bytes: number; // number of bytes the instruction takes
+  cycles: number[]; // number of cycles the instruction takes to execute. The first element is the number of cycles the instruction takes when the condition is met, the second element is the number of cycles the instruction takes when the condition is not met (see RETZ for example)
+  operands: Operand[]; // instruction operands used as function arguments
+  immediate: boolean; // is the operand an immediate value or should it be fetched from memory
+  flags: Flags; // cpu flags affected by the instruction
 };
 
 export type Operand = {
@@ -91,6 +91,7 @@ export type Flags = {
 
 export type CpuState = {
   // Special registers
+  CPU_CYCLES: number; // Number of CPU cycles
   PC: uint16; // Program Counter
   SP: uint16; // Stack Pointer
   A: uint8; // Accumulator
@@ -106,6 +107,7 @@ export type CpuState = {
   HL: uint16;
 
   // Instruction
+  INSTRUCTION: Instruction;
   PREFIXED: boolean; // Is the current instruction prefixed with 0xCB
   IR: uint8; // Instruction Register
   OPERAND_VALUE: uint16; // Current operand fetched from memory (this register doesn't physically exist in the CPU)
@@ -116,20 +118,27 @@ export type CpuState = {
   HALTED: boolean; // is the CPU halted
 };
 
-export type GameboyState = {
-  PREV_CPU_STATE: CpuState;
-  CURR_CPU_STATE: CpuState;
-  INSTR: Instruction;
-  MEMORY_WRITES: MemoryWrite[];
+export type PpuState = {
+  mode: number; // PPU mode (0: HBlank, 1: VBlank, 2: OAM, 3: VRAM)
+  dotX: number; // x position on the screen
+  dotY: number; // y position on the screen
+};
+
+export type ApuState = {
+  sound: boolean;
 };
 
 export enum MessageType {
   // client -> server
   ConnectionMessageType = 0, // initial client http connection even before upgrading to websocket
   CommandMessageType = 10, // sends a command to the server (message.data: 'step', 'reset')
+  JoyPadMessageType = 17, // sends a joypad event to the server (message.data: JoypadEvent)
   // server -> client
   InitialMemoryMapsMessageType = 50, // notifies the client of the initial memory maps (message.data: MemoryWrite)
-  GameboyStateMessageType = 70, // notifies the client of the current gameboy state (message.data: GameboyState)
+  CPUStateMessageType = 70, // notifies the client of the current CPU state (message.data: CpuState)
+  PPUStateMessageType = 71, // notifies the client of the current PPU state (message.data: PpuState)
+  APUStateMessageType = 72, // notifies the client of the current APU state (message.data: ApuState)
+  MemoryStateMessageType = 73, // notifies the client of the current memory state (message.data: MemoryWrite[])
   ErrorMessageType = 90, // notifies the client of an error (message.data: string)
 }
 
@@ -153,19 +162,32 @@ export type InitialMemoryMapsMessage = Message & {
   data: MemoryWrite[];
 };
 
-export type GameboyStateMessage = Message & {
-  type: MessageType.GameboyStateMessageType;
-  data: GameboyState;
+export type CPUStateMessage = Message & {
+  type: MessageType.CPUStateMessageType;
+  data: CpuState;
+};
+
+export type PPUStateMessage = Message & {
+  type: MessageType.PPUStateMessageType;
+  data: PpuState;
+};
+
+export type APUStateMessage = Message & {
+  type: MessageType.APUStateMessageType;
+  data: ApuState;
+};
+
+export type MemoryStateMessage = Message & {
+  type: MessageType.MemoryStateMessageType;
+  data: MemoryWrite[];
+};
+
+export type ErrorMessage = Message & {
+  type: MessageType.ErrorMessageType;
+  data: string;
 };
 
 export type ErrorMessageType = Message & {
   type: MessageType.ErrorMessageType;
   data: string;
 };
-
-export type ServerMessageTypes =
-  | ConnectionMessage
-  | CommandMessage
-  | InitialMemoryMapsMessage
-  | GameboyStateMessage
-  | ErrorMessageType;
