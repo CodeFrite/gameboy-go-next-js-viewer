@@ -123,11 +123,21 @@ const Gameboy = () => {
         ws.current!.send(JSON.stringify(payload));
         console.log("sending add breakpoint request:", JSON.stringify(payload));
       }
+      // there are no entries for that memory, create a new entry and add the breakpoint
     } else {
+      // add the breakpoint to the breakpoints array
       setBreakPoints([
         ...breakPointsRef.current,
         { memoryName: event.detail.memoryName, addresses: [event.detail.address] },
       ]);
+      // send the breakpoint to the server
+      // construct the request payload, stringify it and send it to the server
+      const payload = {
+        type: 20,
+        data: event.detail.address.get(),
+      };
+      ws.current!.send(JSON.stringify(payload));
+      console.log("sending add breakpoint request:", JSON.stringify(payload));
     }
   };
   useEffect(() => {
